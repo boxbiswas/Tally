@@ -78,7 +78,7 @@ export const getLedgers = async (req, res) => {
 
         // Fetch ledgers for the company
         const ledgers = await prisma.ledger.findMany({
-            where: { companyId: companyId },
+            where: whereClause,
             orderBy: { createdAt: 'desc' },      // Order by creation date descending
         });
 
@@ -151,6 +151,9 @@ export const updateLedger = async (req, res) => {
             return res.status(404).json({ error: 'Ledger not found or does not belong to the specified company' });
         }
 
+        // Calculate how much the opening balance changed
+        const balanceDifference = openingBalance !== undefined ? (Number(openingBalance) - existingledger.openingBalance) : 0;
+
         let updatedLedger = await prisma.ledger.update({
             where: { id: ledgerId },
             data: {
@@ -159,8 +162,9 @@ export const updateLedger = async (req, res) => {
                 address: address !== undefined ? address : existingledger.address,
                 mobile: mobile !== undefined ? mobile : existingledger.mobile,
                 gstNo: gstNo !== undefined ? gstNo : existingledger.gstNo,
-                openingBalance: openingBalance !== undefined ? openingBalance : existingledger.openingBalance,
-                balance: openingBalance !== undefined ? openingBalance : existingledger.balance,
+                openingBalance: openingBalance !== undefined ? Number(openingBalance) : existingledger.openingBalance,
+                // Update the balance based on the change in opening balance
+                balance: existingledger.balance + balanceDifference,
             },
         });
 
