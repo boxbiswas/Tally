@@ -40,8 +40,8 @@ export const registerUser = (req, res) => {
 
 export const logoutUser = (req, res) => {
     res.clearCookie('token');
-    res.redirect('/login');
-    // res.status(200).send({ message: 'Logged out successfully' });
+    // res.redirect('/login');
+    res.status(200).send({ message: 'Logged out successfully' });
 };
 
 
@@ -57,7 +57,7 @@ export const loginUser = async (req, res) => {
             if (result) {
                 let token = jwt.sign({ email: user.email }, process.env.JWT_SECRET);
                 res.cookie('token', token);
-                res.send({ message: 'Login successful', token });
+                res.send({ message: 'Login successful', token, user: { id: user.id, name: user.name, email: user.email } });
             } else {
                 res.status(400).send({ message: 'Something went wrong' });
             }
