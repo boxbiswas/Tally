@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Define the exact values allowed for the Ledger type
+enum LedgerType {
+  CUSTOMER
+  SUPPLIER
+}
+
+enum TransactionType {
+  IN
+  OUT
+}
+
+enum ReferenceType {
+  PURCHASE
+  SALE
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  companies Company[]
+}
+
+model Company {
+  id               Int               @id @default(autoincrement())
+  name             String
+  gstNo            String?           @unique
+  financialYear    String
+  userId           Int // Foreign key holding the ID of the User who owns this company
+  user             User              @relation(fields: [userId], references: [id]) // The relation linking this company back to the specific User
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  ledgers          Ledger[] //Company has many Ledgers
+  stockItems       StockItem[] //Company has many Stock Items
+  purchaseVouchers PurchaseVoucher[] //A company has many purchase vouchers
+  salesVouchers    SalesVoucher[] //A company has many sales vouchers
+}
+
+model Ledger {
+  id               Int               @id @default(autoincrement())
+  name             String
+  type             LedgerType
+  address          String?
+  mobile           String?
+  gstNo            String?
+  openingBalance   Float             @default(0)
+  balance          Float             @default(0.0)
+  companyId        Int
+  company          Company           @relation(fields: [companyId], references: [id])
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  purchaseVouchers PurchaseVoucher[] //A ledger (supplier) can be linked to many purchase vouchers
+  salesVouchers    SalesVoucher[] //A ledger (customer) can be linked to many sales vouchers
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model StockItem {
+  id            Int                    @id @default(autoincrement())
+  name          String
+  sku           String                 @unique
+  unit          String                 @default("pcs") // Default unit is pieces
+  purchasePrice Float                  @default(0.0)
+  sellingPrice  Float                  @default(0.0)
+  openingQty    Float                  @default(0.0)
+  openingValue  Float                  @default(0.0)
+  quantity      Float                  @default(0.0)
+  gstRate       Float                  @default(0.0)
+  companyId     Int
+  company       Company                @relation(fields: [companyId], references: [id])
+  purchaseItems PurchaseItem[] //A stock item can appear in many purchase line items
+  salesItems    SalesItem[] //A stock item can appear in many sales line items
+  transactions  InventoryTransaction[] //A stock item can have many inventory transactions (for tracking stock movements)
+
+  @@unique([companyId, sku])
+  @@index([companyId])
+}
+
+// ==========================================
+// NEW MODELS: PURCHASE VOUCHER (HEADER & DETAIL)
+// ==========================================
+model PurchaseVoucher {
+  id         Int            @id @default(autoincrement())
+  voucherNo  String
+  date       DateTime       @default(now())
+  total      Float          @default(0.0)
+  supplierId Int // Relation to Ledger (This represents the Supplier)
+  supplier   Ledger         @relation(fields: [supplierId], references: [id])
+  companyId  Int // Relation to Company
+  company    Company        @relation(fields: [companyId], references: [id])
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  items      PurchaseItem[] // Relation linking the Header to its Details (Line Items)
+
+  @@index([companyId])
+}
+
+model PurchaseItem {
+  id          Int             @id @default(autoincrement())
+  qty         Float           @default(0.0)
+  rate        Float           @default(0.0)
+  amount      Float           @default(0.0)
+  voucherId   Int // Relation back to the Purchase Voucher Header
+  voucher     PurchaseVoucher @relation(fields: [voucherId], references: [id])
+  stockItemId Int // Relation to the specific Stock Item being purchased
+  stockItem   StockItem       @relation(fields: [stockItemId], references: [id])
+
+  @@index([voucherId])
+  @@index([stockItemId])
+}
+
+// ==========================================
+// NEW MODELS: SALES VOUCHER (HEADER & DETAIL)
+// ==========================================
+
+model SalesVoucher {
+  id         Int         @id @default(autoincrement())
+  voucherNo  String
+  date       DateTime    @default(now())
+  total      Float       @default(0.0)
+  customerId Int //Relation to Ledger (This represents the Customer)
+  customer   Ledger      @relation(fields: [customerId], references: [id])
+  companyId  Int // Relation to Company
+  company    Company     @relation(fields: [companyId], references: [id])
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  items      SalesItem[] // Relation linking the Header to its Details (Line Items)
+
+  @@index([companyId])
+}
+
+model SalesItem {
+  id          Int          @id @default(autoincrement())
+  qty         Float        @default(0.0)
+  rate        Float        @default(0.0)
+  amount      Float        @default(0.0)
+  voucherId   Int // Relation back to the Sales Voucher Header
+  voucher     SalesVoucher @relation(fields: [voucherId], references: [id])
+  stockItemId Int // Relation to the specific Stock Item being sold
+  stockItem   StockItem    @relation(fields: [stockItemId], references: [id])
+
+  @@index([voucherId])
+  @@index([stockItemId])
+}
+
+model InventoryTransaction {
+  id            Int             @id @default(autoincrement())
+  date          DateTime        @default(now())
+  type          TransactionType // Enforces that the movement is strictly PURCHASE or SALE
+  quantity      Float           @default(0.0)
+  stockItemId   Int // Relation to the specific Stock Item
+  stockItem     StockItem       @relation(fields: [stockItemId], references: [id])
+  referenceType ReferenceType // Identifies where this transaction came from (e.g., PURCHASE or SALE)
+  referenceId   Int // Stores the ID of the related PurchaseVoucher or SalesVoucher 
+  createdAt     DateTime        @default(now())
+
+  @@index([stockItemId])
+  @@index([referenceId])
+}
