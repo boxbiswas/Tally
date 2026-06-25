@@ -1,10 +1,6 @@
-// INDRASISH BISWAS, 24E102B91
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-
-// 1. Import the logoutUser thunk from your auth slice
-// (Make sure this path matches where your authSlice.js is located!)
 import { logoutUser } from '../redux/slices/authSlice';
 
 export const useShortcuts = () => {
@@ -13,65 +9,114 @@ export const useShortcuts = () => {
 
     useEffect(() => {
         const handleKeyDown = (e) => {
+            const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
+            const isFKeyOrEsc = e.key.startsWith('F') || e.key === 'Escape';
+
+            if (isTyping && !isFKeyOrEsc && !e.ctrlKey && !e.altKey) return;
+
             // 1. GLOBAL FUNCTION KEYS
             if (e.key === 'F1') {
                 e.preventDefault();
-                navigate('/companies'); // Company Selection
+                navigate('/companies');
             }
+
             if (e.key === 'F8') {
                 e.preventDefault();
-                navigate('/vouchers/sales'); // Sales Voucher
+                navigate('/vouchers/sales');
             }
+
             if (e.key === 'F9') {
                 e.preventDefault();
-                navigate('/vouchers/purchase'); // Purchase Voucher
+                navigate('/vouchers/purchase');
             }
 
-            // 2. ESCAPE KEY
             if (e.key === 'Escape') {
                 e.preventDefault();
-                navigate(-1); // Previous Screen
+                navigate(-1);
             }
 
-            // 3. CTRL COMBINATIONS
+            // 2. CTRL COMBINATIONS (only keys where e.preventDefault() actually works in browser)
             if (e.ctrlKey && !e.shiftKey && !e.altKey) {
                 switch (e.key.toLowerCase()) {
-                    case 'q':
-                        e.preventDefault();
-                        // 2. Dispatch the logout action and wait for it to finish before navigating
-                        dispatch(logoutUser()).then(() => {
-                            navigate('/login');
-                        });
-                        break;
                     case 'h':
                         e.preventDefault();
-                        navigate('/dashboard'); // Home
+                        navigate('/dashboard');
                         break;
+
                     case 'i':
                         e.preventDefault();
-                        navigate('/inventory'); // Inventory Dashboard
+                        navigate('/inventory');
                         break;
+
                     case 'b':
                         e.preventDefault();
-                        navigate('/vouchers/sales'); // New Invoice
+                        // Navigate to Reports and tell it to automatically open the Sales tab
+                        navigate('/reports', { state: { tab: 'sales' } });
+                        break;
+
+                    case 'p':
+                        e.preventDefault();
+                        // Instantly trigger the browser's native print dialog
+                        window.print();
+                        break;
+
+                    default:
                         break;
                 }
             }
 
-            // 4. ALT COMBINATIONS
+            // 3. ALT COMBINATIONS
             if (e.altKey && !e.shiftKey && !e.ctrlKey) {
                 switch (e.key.toLowerCase()) {
+
+                    // Moved here from Ctrl (browser-unkillable keys)
+                    case 'q':
+                        e.preventDefault();
+                        dispatch(logoutUser()).then(() => navigate('/login'));
+                        break;
+
+                    case 'c':
+                        e.preventDefault();
+                        navigate('/ledgers/create');
+                        break; // New Customer
+
+                    case 'n':
+                        e.preventDefault();
+                        navigate('/inventory/create');
+                        break; // New Item
+
+                    // Masters
+                    case 'y':
+                        e.preventDefault();
+                        navigate('/ledgers');
+                        break; // Ledger List
+
                     case 'l':
                         e.preventDefault();
-                        navigate('/ledgers/create'); // Create Ledger
-                        break;
+                        navigate('/ledgers/create');
+                        break; // Create Ledger
+
                     case 's':
                         e.preventDefault();
-                        navigate('/inventory/create'); // Create Stock Item
-                        break;
-                    case 'r':
+                        navigate('/inventory/create');
+                        break; // Create Stock Item
+
+                    case 'u':
                         e.preventDefault();
-                        navigate('/reports'); // Stock Summary / Reports
+                        navigate('/ledgers/create');
+                        break; // New Supplier
+
+                    // Reports
+                    case 'r':
+                    case 'b':
+                    case 'p':
+                    case 't':
+                    case 'x':
+                        e.preventDefault();
+                        navigate('/reports');
+                        break;
+
+                    default:
                         break;
                 }
             }
@@ -79,7 +124,8 @@ export const useShortcuts = () => {
 
         window.addEventListener('keydown', handleKeyDown);
 
-        // Cleanup the event listener on unmount
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
     }, [navigate, dispatch]);
 };

@@ -31,7 +31,6 @@ export default function PrintInvoice() {
         fetchInvoiceData();
     }, [id, companyId]);
 
-    // Native print handler - simple and foolproof
     const handlePrint = () => {
         document.title = `Invoice_${sale?.voucherNo || 'Doc'}`;
         window.print();
@@ -40,112 +39,157 @@ export default function PrintInvoice() {
     if (loading) return <div className="p-8 text-center print:hidden">Loading Invoice...</div>;
     if (!sale || !company) return <div className="p-8 text-center text-red-500 print:hidden">Invoice not found.</div>;
 
-    return (
-        <div className="max-w-5xl mx-auto p-4 md:p-6 print:p-0 print:m-0 print:max-w-none">
+    // Helper to convert numbers to words (Basic implementation for the invoice footer)
+    const numberToWords = (num) => {
+        return `INR ${num.toLocaleString('en-IN')} Only`; // Can be expanded to actual word conversion if needed
+    };
 
+    return (
+        <div className="min-h-screen bg-gray-100 p-4 md:p-8 print:p-0 print:bg-white flex flex-col items-center">
+            
             {/* Action Bar - Hidden during print */}
-            <div className="flex justify-between items-center mb-6 print:hidden">
-                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900">
-                    <ArrowLeft className="h-5 w-5" /> Back to Sales
+            <div className="w-full max-w-[800px] flex justify-between items-center mb-6 print:hidden bg-white p-4 rounded-lg shadow-sm">
+                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium">
+                    <ArrowLeft className="h-5 w-5" /> Back
                 </button>
                 <button
                     onClick={handlePrint}
-                    className="bg-blue-600 text-white px-6 py-2 rounded flex items-center gap-2 hover:bg-blue-700 transition"
+                    className="bg-slate-800 text-white px-6 py-2 rounded-md flex items-center gap-2 hover:bg-slate-700 transition font-medium shadow-sm"
                 >
-                    <Printer className="h-5 w-5" /> Print / Save as PDF
+                    <Printer className="h-4 w-4" /> Print Invoice
                 </button>
             </div>
 
-            {/* Printable Area */}
-            <div className="bg-white mx-auto text-sm font-sans text-black print:w-full">
-                <h1 className="text-center text-xl font-bold mb-4 uppercase underline">Tax Invoice</h1>
+            {/* Printable A4 Canvas */}
+            <div className="w-full max-w-[800px] bg-white text-black font-sans text-[12px] leading-snug print:w-full print:max-w-none">
+                
+                {/* Header */}
+                <div className="text-center font-bold text-lg border border-black border-b-0 py-1 uppercase">
+                    Tax Invoice
+                </div>
 
-                <div className="border border-black flex flex-col">
-                    {/* Top Half: Details Section */}
-                    <div className="flex border-b border-black h-48">
-
-                        {/* Left Column: Consignee & Buyer */}
-                        <div className="w-1/2 border-r border-black flex flex-col">
+                {/* Main Grid Wrapper */}
+                <div className="border border-black flex flex-col w-full">
+                    
+                    {/* Top Section: Split Left/Right */}
+                    <div className="flex border-b border-black w-full h-[280px]">
+                        
+                        {/* Left Column (Company & Parties) */}
+                        <div className="w-1/2 flex flex-col border-r border-black">
+                            {/* Seller (Company) */}
                             <div className="p-2 border-b border-black flex-1">
-                                <p className="text-xs text-gray-600 mb-1">Consignee (Ship to)</p>
-                                <p className="font-bold">{sale.customer.name}</p>
-                                <p>{sale.customer.address || 'Address not provided'}</p>
-                                {sale.customer.gstNo && <p>GSTIN/UIN: {sale.customer.gstNo}</p>}
-                                <p>State Name: <span className="font-semibold">Local</span></p>
+                                <p className="font-bold text-[14px]">{company.name}</p>
+                                <p>{company.address || 'Address'}</p>
+                                <p>GSTIN/UIN: {company.gstNo || 'N/A'}</p>
+                                <p>State Name: Local</p>
                             </div>
-                            <div className="p-2 flex-1">
-                                <p className="text-xs text-gray-600 mb-1">Buyer (Bill to)</p>
+                            
+                            {/* Consignee */}
+                            <div className="p-2 border-b border-black flex-1">
+                                <p className="text-gray-600 text-[10px]">Consignee (Ship to)</p>
                                 <p className="font-bold">{sale.customer.name}</p>
                                 <p>{sale.customer.address || 'Address not provided'}</p>
                                 {sale.customer.gstNo && <p>GSTIN/UIN: {sale.customer.gstNo}</p>}
-                                <p>State Name: <span className="font-semibold">Local</span></p>
+                                <p>State Name: Local</p>
+                            </div>
+
+                            {/* Buyer */}
+                            <div className="p-2 flex-1">
+                                <p className="text-gray-600 text-[10px]">Buyer (Bill to)</p>
+                                <p className="font-bold">{sale.customer.name}</p>
+                                <p>{sale.customer.address || 'Address not provided'}</p>
+                                {sale.customer.gstNo && <p>GSTIN/UIN: {sale.customer.gstNo}</p>}
+                                <p>State Name: Local</p>
                             </div>
                         </div>
 
-                        {/* Right Column: Invoice Meta Data */}
+                        {/* Right Column (Meta Data Grid) */}
                         <div className="w-1/2 flex flex-col">
-                            <div className="flex border-b border-black flex-1">
-                                <div className="w-1/2 p-2 border-r border-black">
-                                    <p className="text-xs text-gray-600">Invoice No.</p>
+                            <div className="flex border-b border-black h-1/5">
+                                <div className="w-1/2 border-r border-black p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Invoice No.</p>
                                     <p className="font-bold">{sale.voucherNo}</p>
                                 </div>
-                                <div className="w-1/2 p-2">
-                                    <p className="text-xs text-gray-600">Dated</p>
-                                    <p className="font-bold">{new Date(sale.date).toLocaleDateString()}</p>
+                                <div className="w-1/2 p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Dated</p>
+                                    <p className="font-bold">{new Date(sale.date).toLocaleDateString('en-GB')}</p>
                                 </div>
                             </div>
-                            <div className="flex border-b border-black flex-1">
-                                <div className="w-1/2 p-2 border-r border-black">
-                                    <p className="text-xs text-gray-600">Delivery Note</p>
+                            <div className="flex border-b border-black h-1/5">
+                                <div className="w-1/2 border-r border-black p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Delivery Note</p>
                                 </div>
-                                <div className="w-1/2 p-2">
-                                    <p className="text-xs text-gray-600">Mode/Terms of Payment</p>
-                                </div>
-                            </div>
-                            <div className="flex border-b border-black flex-1">
-                                <div className="w-1/2 p-2 border-r border-black">
-                                    <p className="text-xs text-gray-600">Supplier's Ref.</p>
-                                </div>
-                                <div className="w-1/2 p-2">
-                                    <p className="text-xs text-gray-600">Other Reference(s)</p>
+                                <div className="w-1/2 p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Mode/Terms of Payment</p>
                                 </div>
                             </div>
-                            <div className="p-2 flex-1">
-                                <p className="text-xs text-gray-600">Terms of Delivery</p>
+                            <div className="flex border-b border-black h-1/5">
+                                <div className="w-1/2 border-r border-black p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Reference No. & Date.</p>
+                                </div>
+                                <div className="w-1/2 p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Other References</p>
+                                </div>
+                            </div>
+                            <div className="flex border-b border-black h-1/5">
+                                <div className="w-1/2 border-r border-black p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Buyer's Order No.</p>
+                                </div>
+                                <div className="w-1/2 p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Dated</p>
+                                </div>
+                            </div>
+                            <div className="flex border-b border-black h-1/5">
+                                <div className="w-1/2 border-r border-black p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Dispatch Doc No.</p>
+                                </div>
+                                <div className="w-1/2 p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Delivery Note Date</p>
+                                </div>
+                            </div>
+                            <div className="flex border-b border-black h-1/5">
+                                <div className="w-1/2 border-r border-black p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Dispatched through</p>
+                                </div>
+                                <div className="w-1/2 p-1.5">
+                                    <p className="text-gray-600 text-[10px]">Destination</p>
+                                </div>
+                            </div>
+                            <div className="h-1/5 p-1.5">
+                                <p className="text-gray-600 text-[10px]">Terms of Delivery</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Bottom Half: Items Table */}
-                    <table className="w-full text-left table-fixed border-collapse">
+                    {/* Table Section */}
+                    <table className="w-full text-left border-collapse table-fixed">
                         <thead>
-                            <tr className="border-b border-black border-t">
-                                <th className="w-10 p-2 border-r border-black text-center font-normal">Sl<br />No.</th>
-                                <th className="p-2 border-r border-black font-normal">Description of Goods</th>
-                                <th className="w-20 p-2 border-r border-black font-normal text-center">HSN/SAC</th>
-                                <th className="w-24 p-2 border-r border-black font-normal text-right">Quantity</th>
-                                <th className="w-24 p-2 border-r border-black font-normal text-right">Rate</th>
-                                <th className="w-12 p-2 border-r border-black font-normal text-center">per</th>
-                                <th className="w-32 p-2 font-normal text-right">Amount</th>
+                            <tr className="border-b border-black font-normal align-top h-10">
+                                <th className="w-[8%] border-r border-black p-1 text-center font-normal text-[11px]">Sl<br/>No.</th>
+                                <th className="w-[35%] border-r border-black p-1 text-center font-normal text-[11px]">Description of Goods</th>
+                                <th className="w-[12%] border-r border-black p-1 text-center font-normal text-[11px]">HSN/SAC</th>
+                                <th className="w-[12%] border-r border-black p-1 text-center font-normal text-[11px]">Quantity</th>
+                                <th className="w-[10%] border-r border-black p-1 text-center font-normal text-[11px]">Rate</th>
+                                <th className="w-[8%] border-r border-black p-1 text-center font-normal text-[11px]">per</th>
+                                <th className="w-[15%] p-1 text-center font-normal text-[11px]">Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             {sale.items.map((item, index) => (
-                                <tr key={item.id} className="h-8 align-top">
-                                    <td className="p-2 border-r border-black text-center">{index + 1}</td>
-                                    <td className="p-2 border-r border-black font-semibold">{item.stockItem.name}</td>
-                                    <td className="p-2 border-r border-black text-center"></td>
-                                    <td className="p-2 border-r border-black text-right font-semibold">
-                                        {item.qty} <span className="text-xs font-normal">{item.stockItem.unit}</span>
+                                <tr key={item.id} className="align-top">
+                                    <td className="border-r border-black p-1 text-center">{index + 1}</td>
+                                    <td className="border-r border-black p-1 font-bold">{item.stockItem.name}</td>
+                                    <td className="border-r border-black p-1 text-center"></td>
+                                    <td className="border-r border-black p-1 text-right font-bold">
+                                        {item.qty} <span className="font-normal text-[10px]">{item.stockItem.unit}</span>
                                     </td>
-                                    <td className="p-2 border-r border-black text-right">{item.rate.toFixed(2)}</td>
-                                    <td className="p-2 border-r border-black text-center text-xs">{item.stockItem.unit}</td>
-                                    <td className="p-2 text-right font-semibold">{item.amount.toFixed(2)}</td>
+                                    <td className="border-r border-black p-1 text-right">{item.rate.toFixed(2)}</td>
+                                    <td className="border-r border-black p-1 text-center text-[10px]">{item.stockItem.unit}</td>
+                                    <td className="p-1 text-right font-bold">{item.amount.toFixed(2)}</td>
                                 </tr>
                             ))}
-
-                            {/* Empty Space filler to push total to bottom */}
-                            <tr className="h-64 align-top">
+                            {/* Empty space filler to push the total row down, mimicking physical paper invoices */}
+                            <tr className="h-[250px]">
                                 <td className="border-r border-black"></td>
                                 <td className="border-r border-black"></td>
                                 <td className="border-r border-black"></td>
@@ -155,38 +199,45 @@ export default function PrintInvoice() {
                                 <td></td>
                             </tr>
                         </tbody>
-
                         <tfoot>
-                            <tr className="border-t border-black border-b font-bold">
-                                <td colSpan="3" className="p-2 border-r border-black text-right">Total</td>
-                                <td className="p-2 border-r border-black text-right">
-                                    {sale.items.reduce((sum, item) => sum + item.qty, 0)} pcs
+                            <tr className="border-t border-b border-black font-bold">
+                                <td colSpan="3" className="border-r border-black p-1 text-right pr-4">Total</td>
+                                <td className="border-r border-black p-1 text-right">
+                                    {sale.items.reduce((sum, item) => sum + item.qty, 0)} <span className="font-normal text-[10px]">pcs</span>
                                 </td>
-                                <td className="p-2 border-r border-black"></td>
-                                <td className="p-2 border-r border-black"></td>
-                                <td className="p-2 text-right">₹ {sale.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                <td className="border-r border-black"></td>
+                                <td className="border-r border-black"></td>
+                                <td className="p-1 text-right">₹ {sale.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                             </tr>
                         </tfoot>
                     </table>
 
-                    {/* Footer Information */}
-                    <div className="flex border-t border-black mt-auto">
-                        <div className="w-2/3 p-2 border-r border-black">
-                            <p className="text-xs text-gray-600">Amount Chargeable (in words)</p>
-                            <p className="font-bold italic">INR {sale.total} Only</p>
-                            <p className="text-xs mt-8">Declaration:</p>
-                            <p className="text-xs">We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</p>
+                    {/* Footer Section */}
+                    <div className="flex border-black">
+                        <div className="w-2/3 border-r border-black p-2 flex flex-col justify-between">
+                            <div>
+                                <p className="text-[10px] text-gray-600">Amount Chargeable (in words)</p>
+                                <p className="font-bold italic">{numberToWords(sale.total)}</p>
+                            </div>
+                            <div className="mt-8">
+                                <p className="text-[10px] underline mb-1">Declaration</p>
+                                <p className="text-[10px]">We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</p>
+                            </div>
                         </div>
+                        
                         <div className="w-1/3 flex flex-col justify-between p-2">
-                            <p className="text-right text-xs font-semibold">for {company.name}</p>
+                            <div className="text-right">
+                                <p className="font-bold text-[11px]">for {company.name}</p>
+                            </div>
                             <div className="mt-16 text-right">
-                                <p className="text-xs text-gray-600 border-t border-black inline-block pt-1">Authorized Signatory</p>
+                                <p className="text-[10px] text-gray-600">Authorized Signatory</p>
                             </div>
                         </div>
                     </div>
 
                 </div>
-                <p className="text-center text-xs text-gray-500 mt-2">SUBJECT TO LOCAL JURISDICTION</p>
+                
+                <p className="text-center text-[9px] text-gray-500 mt-1 italic font-medium">SUBJECT TO LOCAL JURISDICTION. E. & O.E</p>
             </div>
         </div>
     );

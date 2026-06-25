@@ -8,8 +8,11 @@ export const getDashboardMetrics = async (req, res) => {
         return res.status(400).json({ message: "Invalid Company ID" });
     }
 
+    // 1. Optimize: Calculate the date for 6 months ago to filter the database query
+    const today = new Date();
+    const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1);
+
     try {
-        // 1. Fetch all aggregates AND raw voucher data concurrently
         const [
             totalCustomers,
             totalSuppliers,
@@ -17,8 +20,8 @@ export const getDashboardMetrics = async (req, res) => {
             purchaseAggregate,
             salesAggregate,
             lowStockItems,
-            allSales,
-            allPurchases
+            recentSales,     // Fetch only recent sales
+            recentPurchases  // Fetch only recent purchases
         ] = await Promise.all([
             prisma.ledger.count({ where: { companyId: companyId, type: 'CUSTOMER' } }),
             prisma.ledger.count({ where: { companyId: companyId, type: 'SUPPLIER' } }),
@@ -29,17 +32,26 @@ export const getDashboardMetrics = async (req, res) => {
                 where: { companyId, quantity: { lt: 10 } },
                 select: { id: true, name: true, quantity: true }
             }),
-            // Fetch dates and totals for the monthly charts
-            prisma.salesVoucher.findMany({ where: { companyId }, select: { date: true, total: true } }),
-            prisma.purchaseVoucher.findMany({ where: { companyId }, select: { date: true, total: true } })
+            // 2. Optimize: Apply the date filter to the findMany queries
+            prisma.salesVoucher.findMany({
+                where: { 
+                    companyId, 
+                    date: { gte: sixMonthsAgo } 
+                }, 
+                select: { date: true, total: true } 
+            }),
+            prisma.purchaseVoucher.findMany({ 
+                where: { 
+                    companyId,
+                    date: { gte: sixMonthsAgo }
+                }, 
+                select: { date: true, total: true } 
+            })
         ]);
 
-        // 2. --- DYNAMIC MONTHLY AGGREGATION (Last 6 Months) ---
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const monthlyDataMap = {};
-        const today = new Date();
 
-        // Initialize the last 6 months with 0 so the chart always looks clean
         for (let i = 5; i >= 0; i--) {
             const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
             const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
@@ -51,28 +63,26 @@ export const getDashboardMetrics = async (req, res) => {
             };
         }
 
-        // Add real Sales to their respective months
-        allSales.forEach(sale => {
+        // Iterate over the optimized recentSales array
+        recentSales.forEach(sale => {
             const d = new Date(sale.date);
             const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
             if (monthlyDataMap[monthKey]) monthlyDataMap[monthKey].sales += sale.total;
         });
 
-        // Add real Purchases to their respective months
-        allPurchases.forEach(purchase => {
+        // Iterate over the optimized recentPurchases array
+        recentPurchases.forEach(purchase => {
             const d = new Date(purchase.date);
             const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
             if (monthlyDataMap[monthKey]) monthlyDataMap[monthKey].purchase += purchase.total;
         });
 
-        // Convert the map back to an array sorted by date
         const monthlyData = Object.values(monthlyDataMap).sort((a, b) => a.sortKey - b.sortKey).map(item => ({
             month: item.month,
             sales: item.sales,
             purchase: item.purchase
         }));
 
-        // 3. Send everything to the React Frontend
         res.status(200).json({
             metrics: {
                 totalCustomers,
@@ -80,8 +90,8 @@ export const getDashboardMetrics = async (req, res) => {
                 totalProducts,
                 totalPurchaseAmount: purchaseAggregate._sum.total || 0,
                 totalSalesAmount: salesAggregate._sum.total || 0,
-                lowStockItems, // Sends the array of low stock items
-                monthlyData // Sends the dynamic chart data!
+                lowStockItems, 
+                monthlyData 
             }
         });
     } catch (error) {

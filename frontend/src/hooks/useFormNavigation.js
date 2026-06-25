@@ -1,96 +1,82 @@
-// import React from 'react';
-// import { useEffect } from 'react';
-
-// export const useFormNavigation = () => {
-//     useEffect(() => {
-//         const handleKeyDown = (e) => {
-//             // Only intercept Enter, ArrowDown, and ArrowUp
-//             if (!['Enter', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
-
-//             // Do not intercept if user is interacting with a complex widget or multi-line text
-//             if (document.activeElement.tagName === 'TEXTAREA') return;
-
-//             // Get all focusable elements on the screen in DOM order
-//             const focusableElements = Array.from(
-//                 document.querySelectorAll(
-//                     'input:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-//                 )
-//             );
-
-//             const currentIndex = focusableElements.indexOf(document.activeElement);
-//             if (currentIndex === -1) return; // Not currently focused on a form element
-
-//             let nextIndex;
-
-//             if (e.key === 'Enter' || e.key === 'ArrowDown') {
-//                 // Prevent default form submission on Enter unless it's a submit button
-//                 if (e.key === 'Enter' && document.activeElement.type !== 'submit') {
-//                     e.preventDefault();
-//                 } else if (e.key === 'ArrowDown' && document.activeElement.tagName === 'SELECT') {
-//                     // Let native dropdowns use ArrowDown
-//                     return;
-//                 }
-
-//                 nextIndex = currentIndex + 1;
-//                 if (nextIndex < focusableElements.length) {
-//                     focusableElements[nextIndex].focus();
-//                     e.preventDefault();
-//                 }
-//             } else if (e.key === 'ArrowUp') {
-//                 if (document.activeElement.tagName === 'SELECT') return; // Let native dropdowns use ArrowUp
-
-//                 nextIndex = currentIndex - 1;
-//                 if (nextIndex >= 0) {
-//                     focusableElements[nextIndex].focus();
-//                     e.preventDefault();
-//                 }
-//             }
-//         };
-
-//         window.addEventListener('keydown', handleKeyDown);
-//         return () => window.removeEventListener('keydown', handleKeyDown);
-//     }, []);
-// };
-
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export const useFormNavigation = () => {
+    const location = useLocation();
+
+    // 1. AUTO-FOCUS ON PAGE LOAD
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const mainArea = document.querySelector('main');
+            if (mainArea) {
+                const firstFocusable = mainArea.querySelector('input:not([disabled]), select:not([disabled])');
+                if (firstFocusable) firstFocusable.focus();
+            }
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [location.pathname]);
+
+    // 2. ARROW KEY NAVIGATION
     useEffect(() => {
         const handleKeyDown = (e) => {
-            // Only intercept navigation keys for form fields
-            if (!['Enter', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
+            const activeEl = document.activeElement;
+            const isInput = activeEl.tagName === 'INPUT' && (activeEl.type === 'text' || activeEl.type === 'number');
+            const isSelect = activeEl.tagName === 'SELECT';
 
-            // Do not intercept if user is interacting with text areas or specific UI widgets
-            if (document.activeElement.tagName === 'TEXTAREA') return;
+            // Added ' ' (Spacebar) to the allowed list for dropdowns
+            if (!['Enter', 'ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', ' '].includes(e.key)) return;
+            if (activeEl.tagName === 'TEXTAREA') return;
 
-            // Get all focusable elements
+            const mainArea = document.querySelector('main');
+            if (!mainArea) return;
+
             const focusableElements = Array.from(
-                document.querySelectorAll(
-                    'input:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-                )
-            );
+                mainArea.querySelectorAll('input:not([disabled]), select:not([disabled]), button:not([disabled])')
+            ).filter(el => el.offsetWidth > 0 || el.offsetHeight > 0);
 
-            const currentIndex = focusableElements.indexOf(document.activeElement);
+            const currentIndex = focusableElements.indexOf(activeEl);
             if (currentIndex === -1) return;
 
-            if (e.key === 'Enter' || e.key === 'ArrowDown') {
-                // Prevent form submission on Enter, except for actual 'Submit' buttons
-                if (e.key === 'Enter' && document.activeElement.type !== 'submit') {
+            let nextIndex = currentIndex;
+
+            // --- DROPDOWN (SELECT) LOGIC ---
+            if (isSelect) {
+                // DO NOT intercept Up, Down, or Space. Let the browser open and navigate the list naturally!
+                if (['ArrowUp', 'ArrowDown', ' '].includes(e.key)) {
+                    return;
+                }
+                // If the user hits Enter, confirm the selection and jump to the next field
+                if (e.key === 'Enter') {
                     e.preventDefault();
+                    nextIndex = currentIndex + 1;
+                }
+            }
+            // --- TEXT INPUT / BUTTON LOGIC ---
+            else {
+                if (isInput && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+                    if (e.key === 'ArrowLeft' && activeEl.selectionStart > 0) return;
+                    if (e.key === 'ArrowRight' && activeEl.selectionEnd < activeEl.value.length) return;
                 }
 
-                // Select next element
-                const nextIndex = currentIndex + 1;
-                if (nextIndex < focusableElements.length) {
-                    focusableElements[nextIndex].focus();
+                if (e.key === 'Enter' && activeEl.type !== 'submit') {
                     e.preventDefault();
+                    nextIndex = currentIndex + 1;
+                } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    nextIndex = currentIndex + 1;
+                } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    nextIndex = currentIndex - 1;
                 }
-            } else if (e.key === 'ArrowUp') {
-                // Select previous element
-                const prevIndex = currentIndex - 1;
-                if (prevIndex >= 0) {
-                    focusableElements[prevIndex].focus();
-                    e.preventDefault();
+            }
+
+            // --- APPLY FOCUS ---
+            if (nextIndex !== currentIndex && nextIndex >= 0 && nextIndex < focusableElements.length) {
+                const nextEl = focusableElements[nextIndex];
+                nextEl.focus();
+
+                if (nextEl.tagName === 'INPUT' && (nextEl.type === 'text' || nextEl.type === 'number')) {
+                    setTimeout(() => nextEl.select(), 10);
                 }
             }
         };
