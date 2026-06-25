@@ -14,6 +14,7 @@ import stockRoutes from './routes/stockRoutes.js';
 import purchaseRoutes from './routes/purchaseRoutes.js';
 import salesRoutes from './routes/salesRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
 
 import { prisma } from "./lib/prisma.js";
 
@@ -42,6 +43,7 @@ app.use('/', stockRoutes);
 app.use('/', purchaseRoutes);
 app.use('/', salesRoutes);
 app.use('/', dashboardRoutes);
+app.use('/', reportRoutes);
 
 
 app.listen(process.env.PORT, () => {

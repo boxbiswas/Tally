@@ -14,6 +14,9 @@ import ItemList from './pages/ItemList';
 import ItemForm from './pages/ItemForm';
 import PurchaseVoucherForm from './pages/PurchaseVoucherForm';
 import SalesVoucherForm from './pages/SalesVoucherForm';
+import VoucherSelection from './pages/VoucherSelection';
+import Reports from './pages/Reports';
+import PrintInvoice from './pages/PrintInvoice';
 
 // Layout
 import MainLayout from './components/layout/MainLayout';
@@ -54,14 +57,14 @@ function App() {
         <Route path="/inventory/create" element={<ItemForm />} />
         <Route path="/inventory/edit/:id" element={<ItemForm />} />
 
-        {/* Purchase Voucher Routes */}
+        {/* Voucher Routes */}
+        <Route path="/vouchers" element={<VoucherSelection />} />
         <Route path="/vouchers/purchase" element={<PurchaseVoucherForm />} />
-
-        {/* Sales Voucher Routes */}
         <Route path="/vouchers/sales" element={<SalesVoucherForm />} />
 
-        
-        <Route path="/reports" element={<div>Reports Component Here</div>} />
+
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/vouchers/sales/print/:id" element={<PrintInvoice />} />
       </Route>
 
       {/* Redirect any unknown routes to login */}

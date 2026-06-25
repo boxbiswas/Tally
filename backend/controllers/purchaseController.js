@@ -14,7 +14,7 @@ export const createPurchase = async (req, res) => {
     try {
         const result = await prisma.$transaction(async (tx) => {
             // Create the purchase record
-            const totalAmount = items.reduce((sum, item) => sum + (item.rate * item.quantity), 0);
+            const totalAmount = items.reduce((sum, item) => sum + (parseFloat(item.rate) * parseFloat(item.quantity)), 0);
 
             const voucher = await tx.purchaseVoucher.create({
                 data: {
@@ -25,10 +25,10 @@ export const createPurchase = async (req, res) => {
                     companyId,
                     items: {
                         create: items.map(item => ({
-                            qty: item.quantity,
-                            rate: item.rate,
-                            amount: item.quantity * item.rate,
-                            stockItemId: item.stockItemId,
+                            qty: parseFloat(item.quantity),
+                            rate: parseFloat(item.rate),
+                            amount: parseFloat(item.quantity) * parseFloat(item.rate),
+                            stockItemId: parseInt(item.stockItemId)
                         })),
                     },
                 },

@@ -57,7 +57,7 @@ const SidebarItem = ({ icon: Icon, label, to, children }) => {
 
 export default function Sidebar() {
   return (
-    <div className="w-64 bg-slate-900 h-screen flex flex-col text-white shadow-xl shrink-0">
+    <div className="w-64 bg-slate-900 h-screen flex flex-col text-white shadow-xl shrink-0 print:hidden">
       <div className="p-6 border-b border-slate-800">
         <h1 className="text-2xl font-bold tracking-wider text-blue-400">Smart<span className="text-white">ERP</span></h1>
       </div>

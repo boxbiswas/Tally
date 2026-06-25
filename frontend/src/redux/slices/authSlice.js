@@ -54,6 +54,7 @@ const authSlice = createSlice({
         logout: (state) => {
             state.user = null;
             state.isAuthenticated = false;
+            localStorage.removeItem('activeCompanyId'); // Clears ERP context on manual logout
         }
     },
     extraReducers: (builder) => {
@@ -93,6 +94,7 @@ const authSlice = createSlice({
             .addCase(logoutUser.fulfilled, (state) => {
                 state.user = null;
                 state.isAuthenticated = false;
+                localStorage.removeItem('activeCompanyId'); // Clears ERP context on API logout
                 toast.success('Logged out successfully');
             });
     },

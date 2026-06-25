@@ -63,7 +63,6 @@ export default function SalesVoucherForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         // Client-side Stock Validation
         for (const item of formData.items) {
             if (item.quantity > item.maxQty) {
@@ -71,13 +70,17 @@ export default function SalesVoucherForm() {
                 return;
             }
         }
-
         setIsSubmitting(true);
         try {
             await api.post(`/company/${companyId}/sales`, {
                 ...formData,
                 customerId: parseInt(formData.customerId),
-                items: formData.items.map(i => ({ ...i, stockItemId: parseInt(i.stockItemId) }))
+                items: formData.items.map(i => ({
+                    stockItemId: parseInt(i.stockItemId),
+                    quantity: Number(i.quantity), // Forces it to be a Float/Number
+                    rate: Number(i.rate),         // Forces it to be a Float/Number
+                    amount: Number(i.amount)      // Forces it to be a Float/Number
+                }))
             });
             toast.success('Sales Voucher saved and stock updated');
             navigate('/dashboard');

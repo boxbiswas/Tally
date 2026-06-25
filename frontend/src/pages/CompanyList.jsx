@@ -11,16 +11,15 @@ import { LogOut } from 'lucide-react';
 const CompanyList = () => {
     const [companies, setCompanies] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedIndex, setSelectedIndex] = useState(0); // 1. Added State for Keyboard Navigation
     const navigate = useNavigate();
-
     const dispatch = useDispatch();
 
     const handleLogout = async () => {
         await dispatch(logoutUser());
-        localStorage.removeItem('activeCompanyId'); // Clean up company context
+        localStorage.removeItem('activeCompanyId');
         navigate('/login');
     };
-
 
     const fetchCompanies = async () => {
         try {
@@ -36,6 +35,27 @@ const CompanyList = () => {
     useEffect(() => {
         fetchCompanies();
     }, []);
+
+    // 2. Added Keyboard Event Listener
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (companies.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setSelectedIndex((prev) => (prev + 1) % companies.length);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setSelectedIndex((prev) => (prev - 1 + companies.length) % companies.length);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSelect(companies[selectedIndex].id);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [companies, selectedIndex]);
 
     const handleSelect = (id) => {
         localStorage.setItem('activeCompanyId', id);
@@ -89,38 +109,50 @@ const CompanyList = () => {
                     </div>
                 ) : (
                     <div className="grid gap-4">
-                        {companies.map((company) => (
-                            <div
-                                key={company.id}
-                                onClick={() => handleSelect(company.id)}
-                                className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:border-slate-800 cursor-pointer transition-all flex justify-between items-center group"
-                            >
-                                <div>
-                                    <h3 className="text-lg font-semibold text-slate-800">{company.name}</h3>
-                                    <div className="text-sm text-gray-500 flex gap-4 mt-1">
-                                        <span>FY: {company.financialYear}</span>
-                                        <span>GST: {company.gstNo || 'N/A'}</span>
+                        {/* 3. Updated Mapping to apply highlight classes */}
+                        {companies.map((company, index) => {
+                            const isSelected = index === selectedIndex;
+                            return (
+                                <div
+                                    key={company.id}
+                                    onClick={() => handleSelect(company.id)}
+                                    className={`
+                                        p-6 rounded-lg shadow-sm cursor-pointer transition-all flex justify-between items-center group border-2
+                                        ${isSelected
+                                            ? 'border-blue-500 bg-blue-50 transform scale-[1.01]'
+                                            : 'border-transparent bg-white hover:border-slate-800'
+                                        }
+                                    `}
+                                >
+                                    <div>
+                                        <h3 className={`text-lg font-semibold ${isSelected ? 'text-blue-800' : 'text-slate-800'}`}>
+                                            {company.name}
+                                        </h3>
+                                        <div className="text-sm text-gray-500 flex gap-4 mt-1">
+                                            <span>FY: {company.financialYear}</span>
+                                            <span>GST: {company.gstNo || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                    <div className={`flex items-center gap-3 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); navigate(`/company/edit/${company.id}`); }}
+                                            className="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => handleDelete(company.id, e)}
+                                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                        <div className="p-2 text-slate-800">
+                                            <ArrowRight className="h-5 w-5" />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); navigate(`/company/edit/${company.id}`); }}
-                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded"
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                    </button>
-                                    <button
-                                        onClick={(e) => handleDelete(company.id, e)}
-                                        className="p-2 text-red-600 hover:bg-red-50 rounded"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
-                                    <div className="p-2 text-slate-800">
-                                        <ArrowRight className="h-5 w-5" />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
