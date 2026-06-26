@@ -31,10 +31,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.get('/', (req, res) => {
-    res.send('Hello, World!');
-});
-
 // Import routes
 app.use('/', authRoutes);
 app.use('/', companyRoutes);

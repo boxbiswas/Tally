@@ -33,12 +33,12 @@ export const createItem = async (req, res) => {
                 name,
                 sku,
                 unit: unit || "PCS",
-                purchasePrice: purchasePrice || 0.0,
-                sellingPrice: sellingPrice || 0.0,
-                openingQty: openingQty || 0.0,
-                openingValue: openingValue || 0.0,
-                quantity: openingQty || 0.0, // Current stock starts at opening quantity
-                gstRate: gstRate || 0.0,
+                purchasePrice: purchasePrice ? Number(purchasePrice) : 0.0,
+                sellingPrice: sellingPrice ? Number(sellingPrice) : 0.0,
+                openingQty: openingQty ? Number(openingQty) : 0.0,
+                openingValue: openingValue ? Number(openingValue) : 0.0,
+                quantity: openingQty ? Number(openingQty) : 0.0, // Current stock starts at opening quantity
+                gstRate: gstRate ? Number(gstRate) : 0.0,
                 companyId: companyId
             }
         });
@@ -194,11 +194,11 @@ export const updateItem = async (req, res) => {
                 name: name !== undefined ? name : existingItem.name,
                 sku: sku !== undefined ? sku : existingItem.sku,
                 unit: unit !== undefined ? unit : existingItem.unit,
-                purchasePrice: purchasePrice !== undefined ? purchasePrice : existingItem.purchasePrice,
-                sellingPrice: sellingPrice !== undefined ? sellingPrice : existingItem.sellingPrice,
-                openingQty: openingQty !== undefined ? openingQty : existingItem.openingQty,
-                openingValue: openingValue !== undefined ? openingValue : existingItem.openingValue,
-                gstRate: gstRate !== undefined ? gstRate : existingItem.gstRate,
+                purchasePrice: purchasePrice !== undefined ? Number(purchasePrice) : existingItem.purchasePrice,
+                sellingPrice: sellingPrice !== undefined ? Number(sellingPrice) : existingItem.sellingPrice,
+                openingQty: openingQty !== undefined ? Number(openingQty) : existingItem.openingQty,
+                openingValue: openingValue !== undefined ? Number(openingValue) : existingItem.openingValue,
+                gstRate: gstRate !== undefined ? Number(gstRate) : existingItem.gstRate,
             },
         });
         res.status(200).json({ message: 'Item updated successfully', data: updatedItem });

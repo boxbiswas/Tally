@@ -8,34 +8,47 @@ import { prisma } from "../lib/prisma.js";
 
 export const createPurchase = async (req, res) => {
     const companyId = parseInt(req.params.companyId);
-    const userEmail = req.user.email;
+    const userEmail = req.user?.email;
     const { voucherNo, date, supplierId, items } = req.body;
 
     try {
+        const parsedSupplierId = parseInt(supplierId);
+        const parsedItems = Array.isArray(items)
+            ? items.map(item => ({
+                stockItemId: parseInt(item.stockItemId),
+                quantity: Number(item.quantity),
+                rate: Number(item.rate),
+            }))
+            : [];
+
+        if (isNaN(companyId) || isNaN(parsedSupplierId) || parsedItems.length === 0 || parsedItems.some(item => isNaN(item.stockItemId) || isNaN(item.quantity) || item.quantity <= 0 || isNaN(item.rate))) {
+            return res.status(400).json({ message: 'Invalid purchase voucher data' });
+        }
+
         const result = await prisma.$transaction(async (tx) => {
             // Create the purchase record
-            const totalAmount = items.reduce((sum, item) => sum + (parseFloat(item.rate) * parseFloat(item.quantity)), 0);
+            const totalAmount = parsedItems.reduce((sum, item) => sum + (item.rate * item.quantity), 0);
 
             const voucher = await tx.purchaseVoucher.create({
                 data: {
                     voucherNo,
                     date: date ? new Date(date) : new Date(),
                     total: totalAmount,
-                    supplierId,
+                    supplierId: parsedSupplierId,
                     companyId,
                     items: {
-                        create: items.map(item => ({
-                            qty: parseFloat(item.quantity),
-                            rate: parseFloat(item.rate),
-                            amount: parseFloat(item.quantity) * parseFloat(item.rate),
-                            stockItemId: parseInt(item.stockItemId)
+                        create: parsedItems.map(item => ({
+                            qty: item.quantity,
+                            rate: item.rate,
+                            amount: item.quantity * item.rate,
+                            stockItemId: item.stockItemId
                         })),
                     },
                 },
             });
 
             // Update stock quantities
-            for (const item of items) {
+            for (const item of parsedItems) {
                 await tx.stockItem.update({
                     where: { id: item.stockItemId },
                     data: { quantity: { increment: item.quantity } },
@@ -57,7 +70,10 @@ export const createPurchase = async (req, res) => {
         res.status(201).json({ message: 'Purchase created successfully', voucher: result });
     } catch (error) {
         console.error('Error creating purchase:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        if (error.code === 'P2003') {
+            return res.status(400).json({ message: 'Invalid supplier or stock item selected.' });
+        }
+        res.status(500).json({ message: 'Internal server error', error: error.message, stack: error.stack });
     }
 };
 

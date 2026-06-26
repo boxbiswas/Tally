@@ -39,6 +39,9 @@ export const createLedger = async (req, res) => {
         res.status(201).send({ message: 'Ledger created successfully', ledger });
     } catch (error) {
         console.error('Error creating ledger:', error);
+        if (error.code === 'P2002') {
+            return res.status(400).send({ error: 'A ledger with this name already exists in this company' });
+        }
         res.status(500).send({ error: 'An error occurred while creating the ledger' });
     }
 };
@@ -72,7 +75,6 @@ export const getLedgers = async (req, res) => {
         if (search) {
             whereClause.name = {
                 contains: search,
-                mode: 'insensitive', // Case-insensitive search
             };
         }
 
@@ -171,6 +173,9 @@ export const updateLedger = async (req, res) => {
         res.status(200).send({ message: 'Ledger updated successfully', ledger: updatedLedger });
     } catch (error) {
         console.error('Error updating ledger:', error);
+        if (error.code === 'P2002') {
+            return res.status(400).send({ error: 'A ledger with this name already exists in this company' });
+        }
         res.status(500).send({ error: 'An error occurred while updating the ledger' });
     }
 };
