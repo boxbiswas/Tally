@@ -26,7 +26,7 @@ export default function ShortcutSidebar() {
                 { key: 'F1', label: 'Company Selection' },
                 { key: 'Esc', label: 'Previous Screen' },
                 { key: 'Ctrl+H', label: 'Dashboard' },
-                { key: 'Alt+Q', label: 'Logout' },        // was Ctrl+Q (unkillable)
+                { key: 'Alt+Q', label: 'Logout' },
             ]
         },
         {
@@ -34,7 +34,7 @@ export default function ShortcutSidebar() {
             items: [
                 { key: 'Alt+L', label: 'Create Ledger' },
                 { key: 'Alt+S', label: 'Create Stock Item' },
-                { key: 'Alt+C', label: 'New Customer' },   // was Ctrl+C (unkillable)
+                { key: 'Alt+C', label: 'New Customer' },
                 { key: 'Alt+U', label: 'New Supplier' },
             ]
         },
@@ -51,9 +51,9 @@ export default function ShortcutSidebar() {
             id: 'inventory', title: 'Inventory Shortcuts',
             items: [
                 { key: 'Ctrl+I', label: 'Inventory Dashboard' },
-                { key: 'Alt+N', label: 'New Item' },        // was Ctrl+N (unkillable)
+                { key: 'Alt+N', label: 'New Item' },
                 { key: 'Ctrl+E', label: 'Edit Item' },
-                { key: 'Alt+D', label: 'Delete Item' },     // was Ctrl+D (unkillable)
+                { key: 'Alt+D', label: 'Delete Item' },
             ]
         },
         {
@@ -69,31 +69,56 @@ export default function ShortcutSidebar() {
     ];
 
     return (
-        <div className="hidden xl:flex w-64 bg-white border-l border-slate-200 h-full flex-col shadow-sm print:hidden select-none">
-            <div className="p-4 border-b border-slate-100 flex items-center gap-2 bg-slate-50">
-                <div className="p-1.5 bg-blue-100 text-blue-700 rounded-md"><Command className="h-4 w-4" /></div>
-                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Quick Actions</h3>
+        <div
+            className="hidden xl:flex w-60 h-full flex-col print:hidden select-none"
+            style={{
+                background: 'rgba(5,8,15,0.8)',
+                backdropFilter: 'blur(24px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                borderLeft: '1px solid rgba(255,255,255,0.07)',
+            }}
+        >
+            {/* Header */}
+            <div className="p-4 flex items-center gap-2.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="h-7 w-7 rounded-md flex items-center justify-center"
+                    style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)' }}>
+                    <Command className="h-3.5 w-3.5 text-indigo-400" />
+                </div>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Quick Actions</h3>
             </div>
 
+            {/* Groups */}
             <div className="flex-1 overflow-y-auto custom-scrollbar pb-4">
                 {shortcutGroups.map((group) => {
                     const isOpen = openGroup === group.id;
                     return (
-                        <div key={group.id} className="border-b border-slate-100">
+                        <div key={group.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                             <button
                                 onClick={() => toggleGroup(group.id)}
-                                className={`w-full flex items-center gap-2 px-4 py-3 text-[11px] font-bold uppercase tracking-wider transition-colors outline-none ${isOpen ? 'text-blue-700 bg-blue-50/50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
+                                className="w-full flex items-center gap-2 px-4 py-3 text-[10px] font-bold uppercase tracking-widest outline-none transition-colors duration-150"
+                                style={{
+                                    color: isOpen ? '#93c5fd' : 'var(--text-muted)',
+                                    background: isOpen ? 'rgba(59,130,246,0.06)' : 'transparent',
+                                }}
                             >
-                                {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                                {isOpen
+                                    ? <ChevronDown className="h-3 w-3 shrink-0" />
+                                    : <ChevronRight className="h-3 w-3 shrink-0" />
+                                }
                                 {group.title}
                             </button>
 
                             {isOpen && (
-                                <div className="flex flex-col gap-0.5 px-2 pb-3 pt-1 bg-white">
+                                <div className="flex flex-col gap-0.5 px-2 pb-3 pt-1">
                                     {group.items.map((shortcut, sIdx) => (
-                                        <div key={sIdx} className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-slate-50 transition-colors">
-                                            <span className="text-[12.5px] font-medium text-slate-700">{shortcut.label}</span>
-                                            <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded bg-white border border-slate-300 text-slate-500 shadow-sm">{shortcut.key}</kbd>
+                                        <div key={sIdx}
+                                            className="flex items-center justify-between px-3 py-2 rounded-lg transition-colors duration-150"
+                                            style={{ color: 'var(--text-secondary)' }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                                        >
+                                            <span className="text-xs font-medium">{shortcut.label}</span>
+                                            <kbd className="kbd-dark">{shortcut.key}</kbd>
                                         </div>
                                     ))}
                                 </div>
@@ -102,27 +127,28 @@ export default function ShortcutSidebar() {
                     );
                 })}
 
-                <div className="mt-6 px-4">
-                    <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                        <div className="flex items-center gap-2 mb-2 text-slate-600">
-                            <Keyboard className="h-4 w-4" />
-                            <span className="text-[11px] font-bold uppercase tracking-wider">Navigation</span>
+                {/* Navigation Tips */}
+                <div className="mt-5 px-3">
+                    <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <div className="flex items-center gap-2 mb-3">
+                            <Keyboard className="h-3.5 w-3.5 text-indigo-400" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Navigation</span>
                         </div>
-                        <ul className="text-[12px] text-slate-500 space-y-2 font-medium">
+                        <ul className="space-y-2.5">
                             <li className="flex justify-between items-center">
-                                <span>Next Field</span>
-                                <kbd className="font-mono bg-white border rounded px-1 shadow-sm text-[10px]">Enter / ➡</kbd>
+                                <span className="text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>Next Field</span>
+                                <kbd className="kbd-dark">Enter / →</kbd>
                             </li>
                             <li className="flex justify-between items-center">
-                                <span>Prev Field</span>
-                                <kbd className="font-mono bg-white border rounded px-1 shadow-sm text-[10px]">⬅ / ⬆</kbd>
+                                <span className="text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>Prev Field</span>
+                                <kbd className="kbd-dark">← / ↑</kbd>
                             </li>
-                            <li className="flex justify-between items-center pt-2 mt-1 border-t border-slate-200">
-                                <span>Open Dropdown</span>
+                            <li className="flex justify-between items-center pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: '4px' }}>
+                                <span className="text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>Open Dropdown</span>
                                 <div className="flex items-center gap-1">
-                                    <kbd className="font-mono bg-white border rounded px-1 shadow-sm text-[10px]">Space</kbd>
-                                    <span className="text-[9px] text-slate-400">or</span>
-                                    <kbd className="font-mono bg-white border rounded px-1 shadow-sm text-[10px]">Alt+⬇</kbd>
+                                    <kbd className="kbd-dark">Space</kbd>
+                                    <span className="text-[9px]" style={{ color: 'var(--text-muted)' }}>or</span>
+                                    <kbd className="kbd-dark">Alt+↓</kbd>
                                 </div>
                             </li>
                         </ul>

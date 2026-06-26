@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Printer, ArrowLeft } from 'lucide-react';
+import { Printer, ArrowLeft, FileText } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../https/axios';
 
@@ -36,8 +36,21 @@ export default function PrintInvoice() {
         window.print();
     };
 
-    if (loading) return <div className="p-8 text-center print:hidden">Loading Invoice...</div>;
-    if (!sale || !company) return <div className="p-8 text-center text-red-500 print:hidden">Invoice not found.</div>;
+    if (loading) return (
+        <div className="flex items-center justify-center h-[70vh] print:hidden">
+            <div className="flex flex-col items-center gap-3">
+                <div className="h-8 w-8 rounded-full border-2 border-t-transparent animate-spin"
+                    style={{ borderColor: 'rgba(99,102,241,0.3)', borderTopColor: '#6366f1' }}></div>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Loading Invoice...</p>
+            </div>
+        </div>
+    );
+
+    if (!sale || !company) return (
+        <div className="flex items-center justify-center h-[70vh] print:hidden">
+            <p className="text-sm font-medium" style={{ color: '#f87171' }}>Invoice not found.</p>
+        </div>
+    );
 
     // Helper to convert numbers to words (Basic implementation for the invoice footer)
     const numberToWords = (num) => {
@@ -45,35 +58,101 @@ export default function PrintInvoice() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 p-4 md:p-8 print:p-0 print:bg-white flex flex-col items-center">
-            
-            {/* Action Bar - Hidden during print */}
-            <div className="w-full max-w-[800px] flex justify-between items-center mb-6 print:hidden bg-white p-4 rounded-lg shadow-sm">
-                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium">
-                    <ArrowLeft className="h-5 w-5" /> Back
-                </button>
-                <button
-                    onClick={handlePrint}
-                    className="bg-slate-800 text-white px-6 py-2 rounded-md flex items-center gap-2 hover:bg-slate-700 transition font-medium shadow-sm"
-                >
-                    <Printer className="h-4 w-4" /> Print Invoice
-                </button>
+        /* ── Screen wrapper: dark canvas ── */
+        <div className="min-h-screen p-4 md:p-8 print:p-0 print:bg-white flex flex-col items-center"
+            style={{ background: 'var(--bg-base)' }}>
+
+            {/* ── Action Bar — dark glass, hidden during print ── */}
+            <div className="w-full max-w-[800px] flex justify-between items-center mb-5 p-3 px-4 rounded-2xl print:hidden"
+                style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+                }}>
+
+                {/* Left: back + invoice badge */}
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-150"
+                        style={{ color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                    </button>
+
+                    <div className="flex items-center gap-2.5">
+                        <div className="h-7 w-7 rounded-lg flex items-center justify-center"
+                            style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.2)' }}>
+                            <FileText className="h-3.5 w-3.5 text-indigo-400" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold leading-none" style={{ color: 'var(--text-primary)' }}>
+                                Tax Invoice
+                            </p>
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                {sale.voucherNo} · {new Date(sale.date).toLocaleDateString('en-GB')}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right: KPIs + print button */}
+                <div className="flex items-center gap-4">
+                    {/* Quick stats */}
+                    <div className="hidden sm:flex items-center gap-4 pr-4"
+                        style={{ borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div className="text-center">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Customer</p>
+                            <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>{sale.customer.name}</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Total</p>
+                            <p className="text-xs font-bold mt-0.5" style={{ color: '#34d399' }}>
+                                ₹{sale.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200"
+                        style={{
+                            background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+                            color: '#fff',
+                            border: '1px solid rgba(99,102,241,0.4)',
+                            boxShadow: '0 0 16px rgba(99,102,241,0.25)',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.boxShadow = '0 0 24px rgba(99,102,241,0.4)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.boxShadow = '0 0 16px rgba(99,102,241,0.25)'; }}
+                    >
+                        <Printer className="h-4 w-4" /> Print Invoice
+                    </button>
+                </div>
             </div>
 
-            {/* Printable A4 Canvas */}
-            <div className="w-full max-w-[800px] bg-white text-black font-sans text-[12px] leading-snug print:w-full print:max-w-none">
-                
-                {/* Header */}
-                <div className="text-center font-bold text-lg border border-black border-b-0 py-1 uppercase">
+            {/* ── Printable A4 Canvas ──
+                IMPORTANT: This section is intentionally kept white/black for clean paper printing.
+                Only the outer wrapper and action bar are styled for dark glass. ── */}
+            <div className="w-full max-w-[800px] bg-white text-black font-sans text-[12px] leading-snug print:w-full print:max-w-none
+                            print:hidden-none overflow-hidden print:rounded-none
+                            shadow-2xl print:shadow-none"
+                style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)' }}>
+
+                {/* Invoice Header */}
+                <div className="text-center font-bold text-lg border border-black border-b-0 py-1 uppercase bg-white text-black">
                     Tax Invoice
                 </div>
 
                 {/* Main Grid Wrapper */}
-                <div className="border border-black flex flex-col w-full">
-                    
+                <div className="border border-black flex flex-col w-full bg-white text-black">
+
                     {/* Top Section: Split Left/Right */}
                     <div className="flex border-b border-black w-full h-[280px]">
-                        
+
                         {/* Left Column (Company & Parties) */}
                         <div className="w-1/2 flex flex-col border-r border-black">
                             {/* Seller (Company) */}
@@ -83,7 +162,7 @@ export default function PrintInvoice() {
                                 <p>GSTIN/UIN: {company.gstNo || 'N/A'}</p>
                                 <p>State Name: Local</p>
                             </div>
-                            
+
                             {/* Consignee */}
                             <div className="p-2 border-b border-black flex-1">
                                 <p className="text-gray-600 text-[10px]">Consignee (Ship to)</p>
@@ -125,7 +204,7 @@ export default function PrintInvoice() {
                             </div>
                             <div className="flex border-b border-black h-1/5">
                                 <div className="w-1/2 border-r border-black p-1.5">
-                                    <p className="text-gray-600 text-[10px]">Reference No. & Date.</p>
+                                    <p className="text-gray-600 text-[10px]">Reference No. &amp; Date.</p>
                                 </div>
                                 <div className="w-1/2 p-1.5">
                                     <p className="text-gray-600 text-[10px]">Other References</p>
@@ -224,7 +303,7 @@ export default function PrintInvoice() {
                                 <p className="text-[10px]">We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</p>
                             </div>
                         </div>
-                        
+
                         <div className="w-1/3 flex flex-col justify-between p-2">
                             <div className="text-right">
                                 <p className="font-bold text-[11px]">for {company.name}</p>
@@ -236,8 +315,10 @@ export default function PrintInvoice() {
                     </div>
 
                 </div>
-                
-                <p className="text-center text-[9px] text-gray-500 mt-1 italic font-medium">SUBJECT TO LOCAL JURISDICTION. E. & O.E</p>
+
+                <p className="text-center text-[9px] text-gray-500 mt-1 italic font-medium bg-white">
+                    SUBJECT TO LOCAL JURISDICTION. E. &amp; O.E
+                </p>
             </div>
         </div>
     );

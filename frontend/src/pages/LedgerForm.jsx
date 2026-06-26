@@ -71,106 +71,122 @@ export default function LedgerForm() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
-      <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+    <div className="max-w-3xl mx-auto rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}>
+      
+      {/* Header */}
+      <div className="p-5 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/ledgers')} className="text-gray-500 hover:text-slate-800">
-            <ArrowLeft className="h-5 w-5" />
+          <button
+            onClick={() => navigate('/ledgers')}
+            className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-150"
+            style={{ color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+          >
+            <ArrowLeft className="h-4 w-4" />
           </button>
-          <h2 className="text-xl font-bold text-slate-800">
+          <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
             {isEdit ? 'Alter Ledger' : 'Ledger Creation'}
           </h2>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
+          {/* Ledger Name */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ledger Name *</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Ledger Name *</label>
             <input
               type="text"
               name="name"
               required
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+              className="input-glass"
               placeholder="e.g. Rahul Traders"
             />
           </div>
 
+          {/* Under Group */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Under Group *</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Under Group *</label>
             <select
               name="type"
               value={formData.type}
               onChange={handleChange}
-              className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+              className="select-glass"
             >
               <option value="CUSTOMER">Sundry Debtors (Customer)</option>
               <option value="SUPPLIER">Sundry Creditors (Supplier)</option>
             </select>
           </div>
 
+          {/* Opening Balance */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Opening Balance (₹)</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Opening Balance (₹)</label>
             <input
               type="number"
               name="openingBalance"
               step="0.01"
               value={formData.openingBalance}
               onChange={handleChange}
-              className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+              className="input-glass"
             />
           </div>
 
-          <div className="md:col-span-2 border-t pt-6 mt-2">
-            <h3 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider">Mailing Details</h3>
+          {/* Section Divider: Mailing Details */}
+          <div className="md:col-span-2 pt-3 mt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Mailing Details</h3>
           </div>
 
+          {/* Mobile */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Mobile Number</label>
             <input
               type="text"
               name="mobile"
               value={formData.mobile}
               onChange={handleChange}
-              className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+              className="input-glass"
               placeholder="+91..."
             />
           </div>
 
+          {/* GST */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">GSTIN / UIN</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>GSTIN / UIN</label>
             <input
               type="text"
               name="gstNo"
               value={formData.gstNo}
               onChange={handleChange}
-              className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+              className="input-glass uppercase"
               placeholder="22AAAAA0000A1Z5"
             />
           </div>
 
+          {/* Address */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Address</label>
             <textarea
               name="address"
               rows="3"
               value={formData.address}
               onChange={handleChange}
-              className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+              className="input-glass resize-none"
               placeholder="Full billing address..."
             />
           </div>
 
         </div>
 
-        <div className="mt-8 flex justify-end">
+        {/* Footer */}
+        <div className="mt-7 flex justify-end pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 transition disabled:opacity-70 flex items-center gap-2"
+            className="btn-primary"
           >
             <Save className="h-4 w-4" />
             {loading ? 'Saving...' : 'Accept & Save'}

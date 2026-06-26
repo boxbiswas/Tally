@@ -10,9 +10,15 @@ export default function Breadcrumb() {
     if (location.pathname === '/dashboard') return null;
 
     return (
-        <nav className="flex items-center text-sm text-slate-500 mb-6">
-            <Link to="/dashboard" className="hover:text-blue-600 flex items-center gap-1">
-                <Home className="h-4 w-4" />
+        <nav className="flex items-center text-sm mb-6">
+            <Link
+                to="/dashboard"
+                className="flex items-center gap-1 transition-colors duration-150"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#93c5fd'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+            >
+                <Home className="h-3.5 w-3.5" />
             </Link>
 
             {pathnames.map((name, index) => {
@@ -23,11 +29,17 @@ export default function Breadcrumb() {
 
                 return (
                     <React.Fragment key={name}>
-                        <ChevronRight className="h-4 w-4 mx-2 shrink-0" />
+                        <ChevronRight className="h-3.5 w-3.5 mx-1.5 shrink-0" style={{ color: 'var(--text-muted)' }} />
                         {isLast ? (
-                            <span className="font-medium text-slate-800">{label}</span>
+                            <span className="font-medium text-sm" style={{ color: 'var(--text-secondary)' }}>{label}</span>
                         ) : (
-                            <Link to={routeTo} className="hover:text-blue-600">
+                            <Link
+                                to={routeTo}
+                                className="text-sm transition-colors duration-150"
+                                style={{ color: 'var(--text-muted)' }}
+                                onMouseEnter={e => { e.currentTarget.style.color = '#93c5fd'; }}
+                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+                            >
                                 {label}
                             </Link>
                         )}

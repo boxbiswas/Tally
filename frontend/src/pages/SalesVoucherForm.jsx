@@ -61,6 +61,22 @@ export default function SalesVoucherForm() {
         setFormData({ ...formData, items: newItems });
     };
 
+    const addRow = () => {
+        setFormData(prev => ({
+            ...prev,
+            items: [...prev.items, { stockItemId: '', quantity: 1, rate: 0, amount: 0 }]
+        }));
+    };
+
+    const removeRow = (index) => {
+        if (formData.items.length === 1) {
+            toast.warning('Voucher must have at least one item');
+            return;
+        }
+        const newItems = formData.items.filter((_, i) => i !== index);
+        setFormData({ ...formData, items: newItems });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         // Client-side Stock Validation
@@ -91,57 +107,154 @@ export default function SalesVoucherForm() {
         }
     };
 
-    if (loadingData) return <div className="p-8 text-center">Loading...</div>;
+    if (loadingData) return (
+        <div className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center gap-3">
+                <div className="h-8 w-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'rgba(16,185,129,0.3)', borderTopColor: '#10b981' }}></div>
+                <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Loading voucher data...</span>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                <ShoppingCart className="text-green-600" /> Sales Voucher (F8)
-            </h2>
+        <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(16,185,129,0.15)', boxShadow: '0 4px 32px rgba(0,0,0,0.4), 0 0 60px rgba(16,185,129,0.04)' }}>
+            
+            {/* Header */}
+            <div className="p-5 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.1)' }}>
+                <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                    <ShoppingCart className="h-5 w-5" style={{ color: '#34d399' }} />
+                </div>
+                <div>
+                    <h2 className="text-lg font-bold leading-none" style={{ color: 'var(--text-primary)' }}>Sales Voucher (F8)</h2>
+                    <p className="text-xs mt-0.5 font-medium" style={{ color: 'var(--text-muted)' }}>Record outward stock to customers</p>
+                </div>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <select required className="p-2 border rounded" onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}>
-                        <option value="">-- Select Customer --</option>
-                        {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                    <input type="text" className="p-2 border rounded" value={formData.voucherNo} onChange={(e) => setFormData({ ...formData, voucherNo: e.target.value })} />
-                    <input type="date" className="p-2 border rounded" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                {/* Header fields */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Customer *</label>
+                        <select
+                            required
+                            className="select-glass"
+                            onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+                        >
+                            <option value="">-- Select Customer --</option>
+                            {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Voucher No.</label>
+                        <input
+                            type="text"
+                            className="input-glass"
+                            value={formData.voucherNo}
+                            onChange={(e) => setFormData({ ...formData, voucherNo: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Date</label>
+                        <input
+                            type="date"
+                            className="input-glass"
+                            value={formData.date}
+                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        />
+                    </div>
                 </div>
 
-                <table className="w-full border-t">
-                    <thead>
-                        <tr className="bg-gray-100">
-                            <th className="p-2">Item</th>
-                            <th className="p-2 w-24">Qty</th>
-                            <th className="p-2 w-32">Rate</th>
-                            <th className="p-2 w-32 text-right">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {formData.items.map((row, i) => (
-                            <tr key={i}>
-                                <td className="p-2">
-                                    <select className="w-full p-2 border rounded" onChange={(e) => handleItemChange(i, 'stockItemId', e.target.value)}>
-                                        <option value="">Select...</option>
-                                        {stockItems.map(item => (
-                                            <option key={item.id} value={item.id}>{item.name} ({item.quantity} in stock)</option>
-                                        ))}
-                                    </select>
-                                </td>
-                                <td className="p-2">
-                                    <input type="number" className="w-full p-2 border rounded" value={row.quantity} onChange={(e) => handleItemChange(i, 'quantity', e.target.value)} />
-                                </td>
-                                <td className="p-2"><input type="number" className="w-full p-2 border rounded" value={row.rate} onChange={(e) => handleItemChange(i, 'rate', e.target.value)} /></td>
-                                <td className="p-2 text-right">{row.amount.toFixed(2)}</td>
+                {/* Line items table */}
+                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Item</th>
+                                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider w-28" style={{ color: 'var(--text-muted)' }}>Qty</th>
+                                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider w-32" style={{ color: 'var(--text-muted)' }}>Rate</th>
+                                <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider w-32" style={{ color: 'var(--text-muted)' }}>Amount</th>
+                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider w-14" style={{ color: 'var(--text-muted)' }}>Del</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {formData.items.map((row, i) => (
+                                <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <td className="px-4 py-2.5">
+                                        <select
+                                            className="select-glass"
+                                            onChange={(e) => handleItemChange(i, 'stockItemId', e.target.value)}
+                                        >
+                                            <option value="">Select...</option>
+                                            {stockItems.map(item => (
+                                                <option key={item.id} value={item.id}>{item.name} ({item.quantity} in stock)</option>
+                                            ))}
+                                        </select>
+                                    </td>
+                                    <td className="px-4 py-2.5">
+                                        <input
+                                            type="number"
+                                            className="input-glass"
+                                            value={row.quantity}
+                                            onChange={(e) => handleItemChange(i, 'quantity', e.target.value)}
+                                        />
+                                    </td>
+                                    <td className="px-4 py-2.5">
+                                        <input
+                                            type="number"
+                                            className="input-glass"
+                                            value={row.rate}
+                                            onChange={(e) => handleItemChange(i, 'rate', e.target.value)}
+                                        />
+                                    </td>
+                                    <td className="px-4 py-2.5 text-right font-semibold" style={{ color: '#34d399' }}>
+                                        ₹{Number(row.amount || 0).toFixed(2)}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => removeRow(i)}
+                                            className="h-7 w-7 rounded-lg flex items-center justify-center mx-auto transition-all duration-150"
+                                            style={{ color: '#f87171', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.18)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
+                                            title="Remove Row"
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    
+                    {/* Add Row Button */}
+                    <div className="p-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                        <button
+                            type="button"
+                            onClick={addRow}
+                            className="text-xs font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-150"
+                            style={{ color: '#34d399', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.15)' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.15)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.08)'; }}
+                        >
+                            <Plus className="h-3.5 w-3.5" /> Add Row
+                        </button>
+                    </div>
+                </div>
 
-                <div className="flex justify-between items-center pt-4 border-t">
-                    <div className="text-xl font-bold">Total: ₹{grandTotal.toFixed(2)}</div>
-                    <button type="submit" disabled={isSubmitting} className="bg-green-600 text-white px-6 py-2 rounded">
+                {/* Footer: total + submit */}
+                <div className="flex justify-between items-center pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Grand Total</p>
+                        <p className="text-2xl font-bold" style={{ color: '#34d399' }}>₹{grandTotal.toFixed(2)}</p>
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="btn-primary"
+                        style={{ background: 'linear-gradient(135deg, #059669, #10b981)', borderColor: 'rgba(16,185,129,0.3)', boxShadow: '0 0 16px rgba(16,185,129,0.25)' }}
+                    >
+                        <Save className="h-4 w-4" />
                         {isSubmitting ? 'Processing...' : 'Save Sale'}
                     </button>
                 </div>

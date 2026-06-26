@@ -50,77 +50,93 @@ export default function ItemList() {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <Package className="h-6 w-6 text-blue-600" />
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}>
+
+            {/* Header */}
+            <div className="px-5 py-4 flex items-center justify-between gap-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                <h2 className="text-lg font-bold flex items-center gap-2.5 shrink-0" style={{ color: 'var(--text-primary)' }}>
+                    <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.2)' }}>
+                        <Package className="h-4 w-4 text-indigo-400" />
+                    </div>
                     Stock Items Master
                 </h2>
 
-                <div className="flex w-full sm:w-auto items-center gap-4">
-                    <div className="relative flex-1 sm:w-64">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <div className="flex items-center gap-3">
+                    <div className="relative w-52">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none z-10" style={{ color: 'var(--text-muted)' }} />
                         <input
                             type="text"
-                            placeholder="Search by name or SKU..."
+                            placeholder="Search items..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-9 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                            className="input-search"
                         />
                     </div>
                     <button
                         onClick={() => navigate('/inventory/create')}
-                        className="bg-slate-800 text-white px-4 py-2 rounded-md hover:bg-slate-700 flex items-center gap-2 text-sm whitespace-nowrap"
+                        className="btn-primary text-sm shrink-0"
                     >
                         <Plus className="h-4 w-4" /> Create Item (Alt+S)
                     </button>
                 </div>
             </div>
 
+            {/* Table */}
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-gray-600">
-                    <thead className="bg-gray-50 text-gray-700 border-b">
-                        <tr>
-                            <th className="p-4 font-semibold">SKU</th>
-                            <th className="p-4 font-semibold">Item Name</th>
-                            <th className="p-4 font-semibold text-right">Purchase Price</th>
-                            <th className="p-4 font-semibold text-right">Selling Price</th>
-                            <th className="p-4 font-semibold text-right">Current Stock</th>
-                            <th className="p-4 font-semibold text-center">Actions</th>
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                            {['SKU','Item Name','Purchase Price','Selling Price','Current Stock','Actions'].map((h, i) => (
+                                <th key={h} className={`px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider ${i >= 2 && i <= 4 ? 'text-right' : i === 5 ? 'text-center' : ''}`} style={{ color: 'var(--text-muted)' }}>
+                                    {h}
+                                </th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="6" className="p-8 text-center text-gray-500">Loading...</td></tr>
+                            <tr><td colSpan="6" className="px-5 py-12 text-center text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Loading...</td></tr>
                         ) : items.length === 0 ? (
-                            <tr><td colSpan="6" className="p-8 text-center text-gray-500">No items found.</td></tr>
+                            <tr><td colSpan="6" className="px-5 py-12 text-center text-sm font-medium" style={{ color: 'var(--text-muted)' }}>No items found.</td></tr>
                         ) : (
-                            items.map((item) => (
-                                <tr key={item.id} className="border-b hover:bg-gray-50">
-                                    <td className="p-4 font-mono text-xs">{item.sku}</td>
-                                    <td className="p-4 font-medium text-slate-800">{item.name}</td>
-                                    <td className="p-4 text-right">₹{item.purchasePrice.toFixed(2)}</td>
-                                    <td className="p-4 text-right">₹{item.sellingPrice.toFixed(2)}</td>
-                                    <td className="p-4 text-right">
-                                        <span className={`font-semibold ${item.quantity <= 10 ? 'text-orange-600' : 'text-green-600'}`}>
+                            items.map((item, idx) => (
+                                <tr
+                                    key={item.id}
+                                    className="table-row-hover"
+                                    style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
+                                >
+                                    <td className="px-5 py-3.5 font-mono text-xs" style={{ color: 'var(--text-muted)' }}>{item.sku}</td>
+                                    <td className="px-5 py-3.5 font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{item.name}</td>
+                                    <td className="px-5 py-3.5 text-right text-sm" style={{ color: 'var(--text-secondary)' }}>₹{item.purchasePrice.toFixed(2)}</td>
+                                    <td className="px-5 py-3.5 text-right text-sm" style={{ color: 'var(--text-secondary)' }}>₹{item.sellingPrice.toFixed(2)}</td>
+                                    <td className="px-5 py-3.5 text-right">
+                                        <span className={item.quantity <= 10 ? 'badge-orange' : 'badge-green'}>
                                             {item.quantity} {item.unit}
                                         </span>
                                     </td>
-                                    <td className="p-4 flex justify-center gap-3">
-                                        <button
-                                            onClick={() => navigate(`/inventory/edit/${item.id}`)}
-                                            className="text-blue-600 hover:text-blue-800"
-                                            title="Alter Item"
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(item.id)}
-                                            className="text-red-600 hover:text-red-800"
-                                            title="Delete Item"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
+                                    <td className="px-5 py-3.5">
+                                        <div className="flex justify-center gap-2">
+                                            <button
+                                                onClick={() => navigate(`/inventory/edit/${item.id}`)}
+                                                className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-150"
+                                                style={{ color: '#60a5fa', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}
+                                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.18)'; }}
+                                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.08)'; }}
+                                                title="Alter Item"
+                                            >
+                                                <Edit className="h-3.5 w-3.5" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-150"
+                                                style={{ color: '#f87171', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}
+                                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.18)'; }}
+                                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
+                                                title="Delete Item"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { ArrowLeft, Save, Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Truck } from 'lucide-react';
 import api from '../https/axios';
 
 export default function PurchaseVoucherForm() {
@@ -121,32 +121,48 @@ export default function PurchaseVoucherForm() {
         }
     };
 
-    if (loadingData) return <div className="p-8 text-center">Loading voucher form...</div>;
+    if (loadingData) return (
+        <div className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center gap-3">
+                <div className="h-8 w-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'rgba(245,158,11,0.3)', borderTopColor: '#f59e0b' }}></div>
+                <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Loading voucher form...</span>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-slate-50 rounded-t-lg">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-slate-800">
-                        <ArrowLeft className="h-5 w-5" />
-                    </button>
-                    <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <ShoppingCart className="h-6 w-6 text-orange-600" />
-                        Purchase Voucher (F9)
-                    </h2>
+        <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(245,158,11,0.15)', boxShadow: '0 4px 32px rgba(0,0,0,0.4), 0 0 60px rgba(245,158,11,0.04)' }}>
+            
+            {/* Header */}
+            <div className="p-5 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.1)' }}>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-150 shrink-0"
+                    style={{ color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                </button>
+                <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                    <Truck className="h-5 w-5" style={{ color: '#fbbf24' }} />
+                </div>
+                <div>
+                    <h2 className="text-lg font-bold leading-none" style={{ color: 'var(--text-primary)' }}>Purchase Voucher (F9)</h2>
+                    <p className="text-xs mt-0.5 font-medium" style={{ color: 'var(--text-muted)' }}>Record inward stock from suppliers</p>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit} className="p-0">
                 {/* Header Section */}
-                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-white">
+                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Supplier Account *</label>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Supplier Account *</label>
                         <select
                             required
                             value={formData.supplierId}
                             onChange={(e) => setFormData({ ...formData, supplierId: e.target.value })}
-                            className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-orange-500 outline-none bg-white"
+                            className="select-glass"
                         >
                             <option value="">-- Select Supplier --</option>
                             {suppliers.map(sup => (
@@ -156,52 +172,52 @@ export default function PurchaseVoucherForm() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Voucher Number *</label>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Voucher Number *</label>
                         <input
                             type="text"
                             required
                             value={formData.voucherNo}
                             onChange={(e) => setFormData({ ...formData, voucherNo: e.target.value })}
-                            className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-orange-500 outline-none font-mono uppercase"
+                            className="input-glass font-mono uppercase"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Date *</label>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>Date *</label>
                         <input
                             type="date"
                             required
                             value={formData.date}
                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                            className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-orange-500 outline-none"
+                            className="input-glass"
                         />
                     </div>
                 </div>
 
                 {/* Dynamic Table Section */}
-                <div className="overflow-x-auto border-t border-b border-gray-200">
+                <div className="overflow-x-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                     <table className="w-full text-left text-sm">
-                        <thead className="bg-slate-800 text-white">
-                            <tr>
-                                <th className="p-3 w-12 text-center">#</th>
-                                <th className="p-3">Name of Item</th>
-                                <th className="p-3 w-32">Quantity</th>
-                                <th className="p-3 w-40">Rate (₹)</th>
-                                <th className="p-3 w-40 text-right">Amount (₹)</th>
-                                <th className="p-3 w-16 text-center">Action</th>
+                        <thead>
+                            <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider w-10" style={{ color: 'var(--text-muted)' }}>#</th>
+                                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Name of Item</th>
+                                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wider w-32" style={{ color: 'var(--text-muted)' }}>Quantity</th>
+                                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wider w-36" style={{ color: 'var(--text-muted)' }}>Rate (₹)</th>
+                                <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider w-36" style={{ color: 'var(--text-muted)' }}>Amount (₹)</th>
+                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider w-14" style={{ color: 'var(--text-muted)' }}>Del</th>
                             </tr>
                         </thead>
                         <tbody>
                             {formData.items.map((row, index) => (
-                                <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                                    <td className="p-3 text-center text-gray-500 font-medium">{index + 1}</td>
+                                <tr key={index} className="table-row-hover" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <td className="px-4 py-2.5 text-center text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{index + 1}</td>
 
-                                    <td className="p-2">
+                                    <td className="px-4 py-2.5">
                                         <select
                                             required
                                             value={row.stockItemId}
                                             onChange={(e) => handleItemChange(index, 'stockItemId', e.target.value)}
-                                            className="w-full p-2 border rounded focus:ring-1 focus:ring-orange-500 outline-none bg-white"
+                                            className="select-glass"
                                         >
                                             <option value="">Select Item...</option>
                                             {stockItems.map(item => (
@@ -210,7 +226,7 @@ export default function PurchaseVoucherForm() {
                                         </select>
                                     </td>
 
-                                    <td className="p-2">
+                                    <td className="px-4 py-2.5">
                                         <input
                                             type="number"
                                             required
@@ -218,11 +234,11 @@ export default function PurchaseVoucherForm() {
                                             step="0.01"
                                             value={row.quantity}
                                             onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                                            className="w-full p-2 border rounded focus:ring-1 focus:ring-orange-500 outline-none text-center"
+                                            className="input-glass text-center"
                                         />
                                     </td>
 
-                                    <td className="p-2">
+                                    <td className="px-4 py-2.5">
                                         <input
                                             type="number"
                                             required
@@ -230,22 +246,25 @@ export default function PurchaseVoucherForm() {
                                             step="0.01"
                                             value={row.rate}
                                             onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
-                                            className="w-full p-2 border rounded focus:ring-1 focus:ring-orange-500 outline-none text-right"
+                                            className="input-glass text-right"
                                         />
                                     </td>
 
-                                    <td className="p-3 text-right font-semibold text-slate-800 bg-gray-50">
-                                        {row.amount.toFixed(2)}
+                                    <td className="px-4 py-2.5 text-right font-semibold" style={{ color: '#fbbf24' }}>
+                                        ₹{Number(row.amount || 0).toFixed(2)}
                                     </td>
 
-                                    <td className="p-2 text-center">
+                                    <td className="px-4 py-2.5 text-center">
                                         <button
                                             type="button"
                                             onClick={() => removeRow(index)}
-                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded"
+                                            className="h-7 w-7 rounded-lg flex items-center justify-center mx-auto transition-all duration-150"
+                                            style={{ color: '#f87171', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.18)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
                                             title="Remove Row"
                                         >
-                                            <Trash2 className="h-4 w-4" />
+                                            <Trash2 className="h-3.5 w-3.5" />
                                         </button>
                                     </td>
                                 </tr>
@@ -254,29 +273,34 @@ export default function PurchaseVoucherForm() {
                     </table>
 
                     {/* Add Row Button */}
-                    <div className="p-3 bg-white">
+                    <div className="p-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                         <button
                             type="button"
                             onClick={addRow}
-                            className="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 transition"
+                            className="text-xs font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-150"
+                            style={{ color: '#60a5fa', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.15)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.08)'; }}
                         >
-                            <Plus className="h-4 w-4" /> Add Row
+                            <Plus className="h-3.5 w-3.5" /> Add Row
                         </button>
                     </div>
                 </div>
 
                 {/* Bottom Section */}
-                <div className="p-6 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4 rounded-b-lg">
-                    <div className="text-xl font-bold text-slate-800">
-                        Grand Total: <span className="text-orange-600 ml-2">₹{grandTotal.toFixed(2)}</span>
+                <div className="p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Grand Total</p>
+                        <p className="text-2xl font-bold" style={{ color: '#fbbf24' }}>₹{grandTotal.toFixed(2)}</p>
                     </div>
 
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full sm:w-auto bg-slate-800 text-white px-8 py-3 rounded-md hover:bg-slate-700 transition disabled:opacity-70 flex items-center justify-center gap-2 font-medium"
+                        className="btn-primary w-full sm:w-auto"
+                        style={{ background: 'linear-gradient(135deg, #d97706, #f59e0b)', borderColor: 'rgba(245,158,11,0.3)', boxShadow: '0 0 16px rgba(245,158,11,0.25)' }}
                     >
-                        <Save className="h-5 w-5" />
+                        <Save className="h-4 w-4" />
                         {isSubmitting ? 'Saving Voucher...' : 'Save Voucher'}
                     </button>
                 </div>
