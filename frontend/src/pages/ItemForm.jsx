@@ -20,7 +20,8 @@ export default function ItemForm() {
         purchasePrice: 0,
         sellingPrice: 0,
         openingQty: 0,
-        gstRate: 0
+        gstRate: 0,
+        currentQty: 0 // <--- ADDED: State to hold the live stock!
     });
     const [loading, setLoading] = useState(false);
 
@@ -38,7 +39,8 @@ export default function ItemForm() {
                         purchasePrice: item.purchasePrice,
                         sellingPrice: item.sellingPrice,
                         openingQty: item.openingQty,
-                        gstRate: item.gstRate
+                        gstRate: item.gstRate,
+                        currentQty: item.quantity || 0 // <--- ADDED: Extract live stock from database
                     });
                 } catch (error) {
                     toast.error('Failed to load item details');
@@ -61,11 +63,22 @@ export default function ItemForm() {
         e.preventDefault();
         setLoading(true);
         try {
+            // We specifically do NOT send currentQty back to the server, it is read-only
+            const payload = {
+                name: formData.name,
+                sku: formData.sku,
+                unit: formData.unit,
+                purchasePrice: formData.purchasePrice,
+                sellingPrice: formData.sellingPrice,
+                openingQty: formData.openingQty,
+                gstRate: formData.gstRate
+            };
+
             if (isEdit) {
-                await api.put(`/company/${companyId}/item/${id}`, formData);
+                await api.put(`/company/${companyId}/item/${id}`, payload);
                 toast.success('Item updated successfully');
             } else {
-                await api.post(`/company/${companyId}/item`, formData);
+                await api.post(`/company/${companyId}/item`, payload);
                 toast.success('Item created successfully');
             }
             navigate('/inventory');

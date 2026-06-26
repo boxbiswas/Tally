@@ -12,15 +12,15 @@ export const useFormNavigation = () => {
         const attemptFocus = () => {
             const mainArea = document.querySelector('main');
             if (mainArea) {
-                const firstFocusable = mainArea.querySelector('input:not([disabled]), select:not([disabled])');
+                const firstFocusable = mainArea.querySelector('input:not([disabled]), select:not([disabled]), textarea:not([disabled])');
                 if (firstFocusable && firstFocusable.offsetWidth > 0) {
                     firstFocusable.focus();
-                    return; 
+                    return;
                 }
             }
-            
+
             attempts++;
-            if (attempts < 40) { 
+            if (attempts < 40) {
                 timeoutId = setTimeout(attemptFocus, 50);
             }
         };
@@ -34,64 +34,81 @@ export const useFormNavigation = () => {
     useEffect(() => {
         const handleKeyDown = (e) => {
             const activeEl = document.activeElement;
+            const key = typeof e.key === 'string' ? e.key : '';
+            if (!key) return;
+
             const isInput = activeEl.tagName === 'INPUT' && (activeEl.type === 'text' || activeEl.type === 'number' || activeEl.type === 'date');
             const isSelect = activeEl.tagName === 'SELECT';
+            const isTextarea = activeEl.tagName === 'TEXTAREA';
+            const isButton = activeEl.tagName === 'BUTTON';
 
-            if (!['Enter', 'ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', ' '].includes(e.key)) return;
-            if (activeEl.tagName === 'TEXTAREA') return;
+            if (!['Enter', 'ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', ' '].includes(key)) return;
+
+            if ((isInput || isTextarea) && key === ' ') return;
+            if (isButton && (key === 'Enter' || key === ' ')) return;
 
             const mainArea = document.querySelector('main');
             if (!mainArea) return;
 
             const focusableElements = Array.from(
-                mainArea.querySelectorAll('input:not([disabled]), select:not([disabled]), button:not([disabled])')
+                mainArea.querySelectorAll('input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])')
             ).filter(el => el.offsetWidth > 0 || el.offsetHeight > 0);
 
             const currentIndex = focusableElements.indexOf(activeEl);
 
             if (currentIndex === -1) {
-                if (['Enter', 'ArrowDown', 'ArrowRight'].includes(e.key)) {
+                if (['Enter', 'ArrowDown', 'ArrowRight'].includes(key)) {
                     e.preventDefault();
-                    if (focusableElements.length > 0) {
-                        focusableElements[0].focus();
-                    }
+                    if (focusableElements.length > 0) focusableElements[0].focus();
                 }
-                return; 
+                return;
             }
 
             let nextIndex = currentIndex;
 
+            // --- TEXTAREA LOGIC (Now with Edge Escape!) ---
+            if (isTextarea) {
+                if (key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    nextIndex = currentIndex + 1; // Enter jumps to save
+                } else if (key === 'ArrowUp' && activeEl.selectionStart === 0) {
+                    e.preventDefault();
+                    nextIndex = currentIndex - 1; // Escape Up!
+                } else if (key === 'ArrowDown' && activeEl.selectionEnd === activeEl.value.length) {
+                    e.preventDefault();
+                    nextIndex = currentIndex + 1; // Escape Down!
+                } else {
+                    return; // Let user navigate text natively
+                }
+            }
             // --- DROPDOWN (SELECT) LOGIC ---
-            if (isSelect) {
-                // Let browser naturally handle Up, Down, and Space to change items in the list
-                if (['ArrowUp', 'ArrowDown', ' '].includes(e.key)) return;
-                
-                // FIX: Allow Left and Right arrows to safely escape the dropdown!
-                if (e.key === 'Enter' || e.key === 'ArrowRight') {
+            else if (isSelect) {
+                if (['ArrowUp', 'ArrowDown', ' '].includes(key)) return;
+
+                if (key === 'Enter' || key === 'ArrowRight') {
                     e.preventDefault();
                     nextIndex = currentIndex + 1;
-                } else if (e.key === 'ArrowLeft') {
+                } else if (key === 'ArrowLeft') {
                     e.preventDefault();
                     nextIndex = currentIndex - 1;
                 }
-            } 
+            }
             // --- TEXT INPUT / BUTTON LOGIC ---
             else {
-                if (isInput && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-                    // Bypass selection check for date inputs to prevent getting stuck
+                if (isInput && (key === 'ArrowLeft' || key === 'ArrowRight')) {
                     if (activeEl.type !== 'date') {
-                        if (e.key === 'ArrowLeft' && activeEl.selectionStart > 0) return;
-                        if (e.key === 'ArrowRight' && activeEl.selectionEnd < activeEl.value.length) return;
+                        if (key === 'ArrowLeft' && activeEl.selectionStart > 0) return;
+                        if (key === 'ArrowRight' && activeEl.selectionEnd < activeEl.value.length) return;
                     }
                 }
 
-                if (e.key === 'Enter' && activeEl.type !== 'submit') {
+                if (key === 'Enter' && activeEl.type !== 'submit') {
                     e.preventDefault();
                     nextIndex = currentIndex + 1;
-                } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                } else if (key === 'ArrowDown' || key === 'ArrowRight') {
                     e.preventDefault();
                     nextIndex = currentIndex + 1;
-                } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                } else if (key === 'ArrowUp' || key === 'ArrowLeft') {
                     e.preventDefault();
                     nextIndex = currentIndex - 1;
                 }

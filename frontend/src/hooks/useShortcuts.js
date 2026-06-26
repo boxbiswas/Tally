@@ -9,35 +9,38 @@ export const useShortcuts = () => {
 
     useEffect(() => {
         const handleKeyDown = (e) => {
+            const key = typeof e.key === 'string' ? e.key : '';
+            if (!key) return;
+
             const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-            const isFKeyOrEsc = e.key.startsWith('F') || e.key === 'Escape';
+            const isFKeyOrEsc = key.startsWith('F') || key === 'Escape';
 
             if (isTyping && !isFKeyOrEsc && !e.ctrlKey && !e.altKey) return;
 
             // 1. GLOBAL FUNCTION KEYS
-            if (e.key === 'F1') {
+            if (key === 'F1') {
                 e.preventDefault();
                 navigate('/companies');
             }
 
-            if (e.key === 'F8') {
+            if (key === 'F8') {
                 e.preventDefault();
                 navigate('/vouchers/sales');
             }
 
-            if (e.key === 'F9') {
+            if (key === 'F9') {
                 e.preventDefault();
                 navigate('/vouchers/purchase');
             }
 
-            if (e.key === 'Escape') {
+            if (key === 'Escape') {
                 e.preventDefault();
                 navigate(-1);
             }
 
             // 2. CTRL COMBINATIONS (only keys where e.preventDefault() actually works in browser)
             if (e.ctrlKey && !e.shiftKey && !e.altKey) {
-                switch (e.key.toLowerCase()) {
+                switch (key.toLowerCase()) {
                     case 'h':
                         e.preventDefault();
                         navigate('/dashboard');

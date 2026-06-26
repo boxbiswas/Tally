@@ -29,7 +29,8 @@ const CustomerReport = ({ data, selectedRowIndex, setSelectedRowIndex }) => {
                         >
                             <td className="px-5 py-3.5 font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{c.name}</td>
                             <td className="px-5 py-3.5 text-sm" style={{ color: 'var(--text-secondary)' }}>{c.mobile || '—'}</td>
-                            <td className={`px-5 py-3.5 text-right font-semibold text-sm`} style={{ color: c.balance > 0 ? '#f87171' : '#34d399' }}>
+                            {/* Swapped colors: Green (#34d399) if they owe you, Red (#f87171) if negative */}
+                            <td className={`px-5 py-3.5 text-right font-semibold text-sm`} style={{ color: c.balance > 0 ? '#34d399' : '#f87171' }}>
                                 {c.balance.toFixed(2)} {c.balance > 0 ? 'Dr' : ''}
                             </td>
                         </tr>

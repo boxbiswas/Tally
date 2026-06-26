@@ -96,6 +96,9 @@ const authSlice = createSlice({
                 state.isAuthenticated = false;
                 localStorage.removeItem('activeCompanyId'); // Clears ERP context on API logout
                 toast.success('Logged out successfully');
+            })
+            .addCase(logoutUser.rejected, (state, action) => {
+                toast.error(action.payload);
             });
     },
 });

@@ -4,6 +4,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Building, Calendar, Hash, ArrowLeft } from 'lucide-react';
 import api from '../https/axios';
+import CompanyFormFields from '../components/comapnyForm/CompanyFormFields';    
+import CompanyFormHeader from '../components/comapnyForm/CompanyFormHeader';
+
+import { useFormNavigation } from '../hooks/useFormNavigation';
 
 const CompanyForm = () => {
     const { id } = useParams();
@@ -12,6 +16,8 @@ const CompanyForm = () => {
 
     const [formData, setFormData] = useState({ name: '', gstNo: '', financialYear: '2023-24' });
     const [loading, setLoading] = useState(false);
+
+    useFormNavigation();
 
     useEffect(() => {
         if (isEdit) {
@@ -31,6 +37,17 @@ const CompanyForm = () => {
             fetchCompany();
         }
     }, [id, isEdit, navigate]);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                navigate('/companies');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [navigate]);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -52,19 +69,24 @@ const CompanyForm = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] relative flex items-center justify-center p-8 overflow-hidden selection:bg-white/20">
+        <main className="min-h-screen bg-[#050505] relative flex items-center justify-center p-8 overflow-x-hidden selection:bg-white/20">
             {/* Ambient Background Glows to emphasize the glass effect */}
             <div className="fixed top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-indigo-500/10 rounded-full mix-blend-screen filter blur-[100px] pointer-events-none"></div>
             <div className="fixed bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-blue-500/10 rounded-full mix-blend-screen filter blur-[100px] pointer-events-none"></div>
 
             {/* Glass Card */}
             <div className="relative z-10 w-full max-w-md bg-white/3 backdrop-blur-2xl border border-white/8 rounded-4xl shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] p-8">
-                <button 
-                    onClick={() => navigate('/companies')} 
-                    className="text-neutral-400 hover:text-white mb-8 flex items-center gap-2 transition-colors font-medium group w-fit"
-                >
-                    <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" /> Back to Companies
-                </button>
+                <div className="flex justify-between items-center mb-8">
+                    <button 
+                        onClick={() => navigate('/companies')} 
+                        className="text-neutral-400 hover:text-white flex items-center gap-3 transition-colors font-medium group w-fit px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10"
+                    >
+                        <div className="flex items-center gap-2">
+                            <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" /> Back to Companies
+                        </div>
+                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-neutral-900 text-neutral-400 rounded border border-neutral-700 group-hover:bg-neutral-800 transition-colors">ESC</span>
+                    </button>
+                </div>
 
                 <h2 className="text-2xl font-semibold tracking-tight text-white mb-8">
                     {isEdit ? 'Edit Company' : 'Create New Company'}
@@ -133,7 +155,7 @@ const CompanyForm = () => {
                     </button>
                 </form>
             </div>
-        </div>
+        </main>
     );
 };
 

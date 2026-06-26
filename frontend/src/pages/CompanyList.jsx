@@ -27,7 +27,7 @@ const CompanyList = () => {
     const fetchCompanies = async () => {
         try {
             const response = await api.get('/company');
-            setCompanies(response.data.companies);
+            setCompanies(response.data.companies || []);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to fetch companies');
         } finally {
@@ -39,11 +39,10 @@ const CompanyList = () => {
         fetchCompanies();
     }, []);
 
-    // 2D Navigation Engine
+    // Keyboard Navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (companies.length === 0) return;
-
+            // Global shortcuts (work even when no companies)
             if (e.key.toLowerCase() === 'c' && e.altKey) {
                 e.preventDefault();
                 navigate('/company/create');
@@ -54,6 +53,8 @@ const CompanyList = () => {
                 handleLogout();
                 return;
             }
+
+            if (companies.length === 0) return;
 
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
@@ -93,13 +94,14 @@ const CompanyList = () => {
     };
 
     const handleDelete = async (id, e) => {
-        e.stopPropagation();
+        if (e?.stopPropagation) e.stopPropagation();
         if (!window.confirm('Are you sure you want to delete this company?')) return;
+
         try {
             await api.delete(`/company/${id}`);
             toast.success('Company deleted successfully');
             setCompanies(companies.filter(c => c.id !== id));
-            if (localStorage.getItem('activeCompanyId') == id) {
+            if (localStorage.getItem('activeCompanyId') === id) {
                 localStorage.removeItem('activeCompanyId');
             }
             setSelectedIndex(0);
@@ -109,19 +111,22 @@ const CompanyList = () => {
         }
     };
 
-    if (loading) return (
-        <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-            <div className="text-neutral-400 font-medium tracking-wide">Loading companies...</div>
-        </div>
-    );
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+                <div className="text-neutral-400 font-medium tracking-wide">Loading companies...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#050505] relative p-8 overflow-hidden selection:bg-white/20">
-            <div className="fixed top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-indigo-500/10 rounded-full mix-blend-screen filter blur-[100px] pointer-events-none"></div>
-            <div className="fixed bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-blue-500/10 rounded-full mix-blend-screen filter blur-[100px] pointer-events-none"></div>
+            {/* Enhanced Glass Ambient Glows */}
+            <div className="fixed inset-0 bg-[radial-gradient(at_30%_20%,rgba(129,140,248,0.08)_0px,transparent_50%)]"></div>
+            <div className="fixed inset-0 bg-[radial-gradient(at_70%_80%,rgba(59,130,246,0.08)_0px,transparent_50%)]"></div>
 
             <div className="max-w-4xl mx-auto relative z-10">
-                <CompanyListHeader 
+                <CompanyListHeader
                     onCreate={() => navigate('/company/create')}
                     onLogout={handleLogout}
                 />
