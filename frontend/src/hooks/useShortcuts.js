@@ -9,7 +9,7 @@ export const useShortcuts = () => {
 
     useEffect(() => {
         const handleKeyDown = (e) => {
-            const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
+            const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
             const isFKeyOrEsc = e.key.startsWith('F') || e.key === 'Escape';
 
             if (isTyping && !isFKeyOrEsc && !e.ctrlKey && !e.altKey) return;
@@ -67,9 +67,10 @@ export const useShortcuts = () => {
 
             // 3. ALT COMBINATIONS
             if (e.altKey && !e.shiftKey && !e.ctrlKey) {
-                switch (e.key.toLowerCase()) {
+                const key = e.key.toLowerCase();
+                const code = e.code; // Reliable detection for Number Pad and top-row numbers
 
-                    // Moved here from Ctrl (browser-unkillable keys)
+                switch (key) {
                     case 'q':
                         e.preventDefault();
                         dispatch(logoutUser()).then(() => navigate('/login'));
@@ -118,6 +119,23 @@ export const useShortcuts = () => {
 
                     default:
                         break;
+                }
+
+                // --- GLOBAL REPORT TAB NAVIGATION (Alt + 1 to 5) ---
+                if (key === '1' || code === 'Digit1' || code === 'Numpad1') {
+                    e.preventDefault(); navigate('/reports', { state: { tab: 'customers' } });
+                }
+                if (key === '2' || code === 'Digit2' || code === 'Numpad2') {
+                    e.preventDefault(); navigate('/reports', { state: { tab: 'suppliers' } });
+                }
+                if (key === '3' || code === 'Digit3' || code === 'Numpad3') {
+                    e.preventDefault(); navigate('/reports', { state: { tab: 'stock' } });
+                }
+                if (key === '4' || code === 'Digit4' || code === 'Numpad4') {
+                    e.preventDefault(); navigate('/reports', { state: { tab: 'sales' } });
+                }
+                if (key === '5' || code === 'Digit5' || code === 'Numpad5') {
+                    e.preventDefault(); navigate('/reports', { state: { tab: 'purchases' } });
                 }
             }
         };
