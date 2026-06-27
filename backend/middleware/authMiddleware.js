@@ -3,8 +3,10 @@ import "dotenv/config";
 
 export const isLoggedIn = (req, res, next) => {
     // Check if cookie exists and has a token
+    console.log("Cookies received:", req.cookies);
+
     if (!req.cookies || !req.cookies.token) {
-        return res.send({ message: 'You are not logged in' });
+        return res.send({ message: 'You are not logged in - token missing' });
     }
 
     try {

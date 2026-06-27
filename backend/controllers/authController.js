@@ -27,7 +27,12 @@ export const registerUser = (req, res) => {
                     }
                 });
                 let token = jwt.sign({ email }, process.env.JWT_SECRET);
-                res.cookie('token', token);
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: true,        // Required for production (HTTPS)
+                    sameSite: 'none',    // REQUIRED for cross-site cookies
+                    maxAge: 24 * 60 * 60 * 1000 // 1 day
+                });
                 res.send({ message: 'User registered successfully', token });
             } catch (err) {
                 console.error("REGISTER ERROR:", err);
@@ -56,7 +61,12 @@ export const loginUser = async (req, res) => {
         bcrypt.compare(req.body.password, user.password, (err, result) => {
             if (result) {
                 let token = jwt.sign({ email: user.email }, process.env.JWT_SECRET);
-                res.cookie('token', token);
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: true,        // Required for production (HTTPS)
+                    sameSite: 'none',    // REQUIRED for cross-site cookies
+                    maxAge: 24 * 60 * 60 * 1000 // 1 day
+                });
                 res.send({ message: 'Login successful', token, user: { id: user.id, name: user.name, email: user.email } });
             } else {
                 res.status(400).send({ message: 'Something went wrong' });

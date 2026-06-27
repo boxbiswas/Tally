@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Building, Plus, Trash2, Edit, ArrowRight, LogOut } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Building, Plus, Trash2, Edit, ArrowRight, LogOut, LayoutDashboard } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../https/axios';
 import { useDispatch } from 'react-redux';
@@ -16,6 +16,7 @@ const CompanyList = () => {
     const [focusedAction, setFocusedAction] = useState(0);
 
     const navigate = useNavigate();
+    const location = useLocation(); 
     const dispatch = useDispatch();
 
     const handleLogout = async () => {
@@ -24,8 +25,9 @@ const CompanyList = () => {
         navigate('/login');
     };
 
-    const fetchCompanies = async () => {
+    const fetchCompanies = useCallback(async () => {
         try {
+            setLoading(true);
             const response = await api.get('/company');
             setCompanies(response.data.companies || []);
         } catch (error) {
@@ -33,16 +35,17 @@ const CompanyList = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
+    // FIX: Re-fetch whenever the location key changes (e.g. coming back from /company/create)
     useEffect(() => {
         fetchCompanies();
-    }, []);
+    }, [fetchCompanies, location.key]);
 
     // Keyboard Navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
-            // Global shortcuts (work even when no companies)
+            // Global shortcuts
             if (e.key.toLowerCase() === 'c' && e.altKey) {
                 e.preventDefault();
                 navigate('/company/create');
@@ -111,7 +114,7 @@ const CompanyList = () => {
         }
     };
 
-    if (loading) {
+    if (loading && companies.length === 0) {
         return (
             <div className="min-h-screen bg-[#050505] flex items-center justify-center">
                 <div className="text-neutral-400 font-medium tracking-wide">Loading companies...</div>
@@ -121,11 +124,25 @@ const CompanyList = () => {
 
     return (
         <div className="min-h-screen bg-[#050505] relative p-8 overflow-hidden selection:bg-white/20">
-            {/* Enhanced Glass Ambient Glows */}
-            <div className="fixed inset-0 bg-[radial-gradient(at_30%_20%,rgba(129,140,248,0.08)_0px,transparent_50%)]"></div>
-            <div className="fixed inset-0 bg-[radial-gradient(at_70%_80%,rgba(59,130,246,0.08)_0px,transparent_50%)]"></div>
+            {/* FIX: ADDED THE MISSING LOGO TO THE TOP LEFT */}
+            <div className="absolute top-8 left-8 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(99,102,241,0.5)]"
+                    style={{ background: 'linear-gradient(135deg, #3b82f6, #6366f1)' }}>
+                    <span className="text-white font-bold text-lg">S</span>
+                </div>
+                <div>
+                    <h1 className="text-xl font-bold tracking-tight leading-none" style={{ color: 'var(--text-primary)' }}>
+                        Smart<span style={{ background: 'linear-gradient(135deg,#60a5fa,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>ERP</span>
+                    </h1>
+                    <p className="text-xs mt-0.5 font-medium" style={{ color: 'var(--text-muted)' }}>Business Suite</p>
+                </div>
+            </div>
 
-            <div className="max-w-4xl mx-auto relative z-10">
+            {/* Ambient Background Glows */}
+            <div className="fixed inset-0 bg-[radial-gradient(at_30%_20%,rgba(129,140,248,0.08)_0px,transparent_50%)] pointer-events-none"></div>
+            <div className="fixed inset-0 bg-[radial-gradient(at_70%_80%,rgba(59,130,246,0.08)_0px,transparent_50%)] pointer-events-none"></div>
+
+            <div className="max-w-4xl mx-auto relative z-10 mt-16">
                 <CompanyListHeader
                     onCreate={() => navigate('/company/create')}
                     onLogout={handleLogout}

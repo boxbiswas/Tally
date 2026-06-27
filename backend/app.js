@@ -22,8 +22,13 @@ const app = express();
 
 // Cors configuration
 app.use(cors({
-    origin: 'http://localhost:5173', 
+    origin: [
+        "http://localhost:5173",
+        "https://smarterp-one.vercel.app"
+    ],
     credentials: true, // This allows the cookies to be sent back and forth
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Cookie']
 }))
 
 
@@ -42,6 +47,9 @@ app.use('/', dashboardRoutes);
 app.use('/', reportRoutes);
 
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`);
+const PORT = process.env.PORT || 8080;
+
+// Explicitly bind to 0.0.0.0 so Railway's proxy can route traffic to it
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server is running on port ${PORT}`);
 });
