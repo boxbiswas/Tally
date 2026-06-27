@@ -20,8 +20,7 @@
 
 | Layer | URL |
 |-------|-----|
-| Frontend | [https://smarterp-one.vercel.app](https://smarterp-one.vercel.app) |
-| Backend API | [https://smarterp-backend-production-6f3c.up.railway.app](https://smarterp-backend-production-6f3c.up.railway.app) |
+| SmartERP | [https://smarterp-one.vercel.app](https://smarterp-one.vercel.app) |
 
 ---
 
