@@ -47,7 +47,7 @@
 graph TD
   User["👤 User (Browser)"] --> FE["⚛️ React + Vite\nVercel CDN"]
 
-  FE -->|"HTTP REST\nwithCredentials (JWT cookie)"| BE["🚀 Express 5 API\nRailway  :8080"]
+  FE -->|"HTTP REST\nwithCredentials (JWT cookie)"| BE["🚀 Express 5 API\nRailway  :3000"]
 
   BE --> MW["🔐 isLoggedIn\nJWT Middleware"]
   MW --> CTR["🎛️ Controllers"]
