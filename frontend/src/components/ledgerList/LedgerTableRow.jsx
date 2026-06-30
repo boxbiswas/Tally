@@ -35,9 +35,9 @@ const LedgerTableRow = ({ ledger, idx, onEdit, onDelete }) => {
                 {ledger.gstNo || '—'}
             </td>
 
-            {/* Closing Balance */}
+            {/* Opening Balance */}
             <td className="px-5 py-3.5 text-right font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
-                ₹{ledger.balance.toFixed(2)}
+                ₹{ledger.openingBalance.toFixed(2)}
             </td>
 
             {/* Action Buttons */}

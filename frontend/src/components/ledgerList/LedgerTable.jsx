@@ -10,7 +10,7 @@ const LedgerTable = ({ ledgers, loading, onEdit, onDelete }) => {
             <table className="w-full text-left text-sm">
                 <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                        {['Ledger Name', 'Group/Type', 'Contact', 'GST No.', 'Closing Bal.', 'Actions'].map((h, i) => (
+                        {['Ledger Name', 'Group/Type', 'Contact', 'GST No.', 'Opening Bal.', 'Actions'].map((h, i) => (
                             <th
                                 key={h}
                                 className={`px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider 

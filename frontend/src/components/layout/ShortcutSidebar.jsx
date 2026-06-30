@@ -52,8 +52,8 @@ export default function ShortcutSidebar() {
             items: [
                 { key: 'Ctrl+I', label: 'Inventory Dashboard' },
                 { key: 'Alt+N', label: 'New Item' },
-                { key: 'Ctrl+E', label: 'Edit Item' },
-                { key: 'Alt+D', label: 'Delete Item' },
+                // { key: 'Ctrl+E', label: 'Edit Item' },
+                // { key: 'Alt+D', label: 'Delete Item' },
             ]
         },
         {
